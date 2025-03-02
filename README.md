@@ -1,12 +1,12 @@
-# Plan:
+# A Method for Image Generation Using Conditional Multi-Views
 
-https://www.overleaf.com/learn/how-to/Writing_Markdown_in_LaTeX_Documents
-
-
+Aktualna wersja pracy w pliku `main.pdf`.
 
 
 
-# Wymagania:
+
+
+# Wymagania ze strony pwr:
 
 ### Tytuł i temat pracy
 Tytuł pracy dyplomowej powinien być jednoznaczny, zwięzły, jasno określony i adekwatny do treści. Temat pracy dotyczy wyraźnie wyodrębnionego problemu lub zagadnienia, którego rozwiązania lub opracowania podejmuje się autor. Problematyka pracy jest zgodna z kierunkiem studiów.
@@ -91,34 +91,3 @@ Cel pracy:
 2. Watson D, Chan W, et al. _Novel View Synthesis with Diffusion Models_; 2022
 3. Gao, Ruiqi, Holynski, et al. _Cat3d: Create anything in 3d with multi-view diffusion models_; 2024
 4. Wangbo Yu, Jinbo Xing, et al. _ViewCrafter: Taming Video Diffusion Models for High-fidelity Novel View Synthesis_; 2024
-
-
-
-
-
-
-
-@misc{watson2022novelviewsynthesisdiffusion,
-      title={Novel View Synthesis with Diffusion Models}, 
-      author={Daniel Watson and William Chan and Ricardo Martin-Brualla and Jonathan Ho and Andrea Tagliasacchi and Mohammad Norouzi},
-      year={2022},
-      eprint={2210.04628},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2210.04628}, 
-}
-@article{gao2024cat3d,
-  title={Cat3d: Create anything in 3d with multi-view diffusion models},
-  author={Gao, Ruiqi and Holynski, Aleksander and Henzler, Philipp and Brussee, Arthur and Martin-Brualla, Ricardo and Srinivasan, Pratul and Barron, Jonathan T and Poole, Ben},
-  journal={arXiv preprint arXiv:2405.10314},
-  year={2024}
-}
-@misc{yu2024viewcraftertamingvideodiffusion,
-      title={ViewCrafter: Taming Video Diffusion Models for High-fidelity Novel View Synthesis}, 
-      author={Wangbo Yu and Jinbo Xing and Li Yuan and Wenbo Hu and Xiaoyu Li and Zhipeng Huang and Xiangjun Gao and Tien-Tsin Wong and Ying Shan and Yonghong Tian},
-      year={2024},
-      eprint={2409.02048},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2409.02048}, 
-}

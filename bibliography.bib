@@ -1,86 +1,172 @@
-% Straucute from Motion:
+% Structure from Motion:
 
 @book{multipleviewgeometry,
-  added-at = {2012-09-23T11:04:02.000+0200},
-  address = {New York, NY, USA},
-  author = {Hartley, Richard and Zisserman, Andrew},
-  biburl = {https://www.bibsonomy.org/bibtex/24867b22ef159cc28fc1bbe1476a0ec57/daill},
+  added-at    = {2012-09-23T11:04:02.000+0200},
+  address     = {New York, NY, USA},
+  author      = {Hartley, Richard and Zisserman, Andrew},
+  biburl      = {https://www.bibsonomy.org/bibtex/24867b22ef159cc28fc1bbe1476a0ec57/daill},
   description = {Multiple View Geometry in Computer Vision},
-  edition = 2,
-  interhash = {7894893cb1baf364de16c2d27541e4c4},
-  intrahash = {4867b22ef159cc28fc1bbe1476a0ec57},
-  isbn = {0521540518},
-  keywords = {geometry multiple view zisserman},
-  publisher = {Cambridge University Press},
-  timestamp = {2012-09-23T11:04:02.000+0200},
-  title = {Multiple View Geometry in Computer Vision},
-  year = 2003
+  edition     = 2,
+  interhash   = {7894893cb1baf364de16c2d27541e4c4},
+  intrahash   = {4867b22ef159cc28fc1bbe1476a0ec57},
+  isbn        = {0521540518},
+  keywords    = {geometry multiple view zisserman},
+  publisher   = {Cambridge University Press},
+  timestamp   = {2012-09-23T11:04:02.000+0200},
+  title       = {Multiple View Geometry in Computer Vision},
+  year        = 2003
 }
 
+@article{sift,
+  author  = {Lindeberg, Tony},
+  doi     = {10.4249/scholarpedia.10491},
+  journal = {Scholarpedia},
+  month   = {05},
+  title   = {Scale Invariant Feature Transform},
+  volume  = {7},
+  year    = {2012}
+}
+
+@article{orb,
+  author  = {Rublee, Ethan and Rabaud, Vincent and Konolige, Kurt and Bradski, Gary},
+  doi     = {10.1109/ICCV.2011.6126544},
+  journal = {Proceedings of the IEEE International Conference on Computer Vision},
+  month   = {11},
+  pages   = {2564-2571},
+  title   = {ORB: an efficient alternative to SIFT or SURF},
+  year    = {2011}
+}
+
+@misc{nerf,
+  archiveprefix = {arXiv},
+  author        = {Ben Mildenhall and Pratul P. Srinivasan and Matthew Tancik and Jonathan T. Barron and Ravi Ramamoorthi and Ren Ng},
+  eprint        = {2003.08934},
+  primaryclass  = {cs.CV},
+  title         = {NeRF: Representing Scenes as Neural Radiance Fields for View Synthesis},
+  url           = {https://arxiv.org/abs/2003.08934},
+  year          = {2020}
+}
+
+@misc{gaussiansplatting,
+  archiveprefix = {arXiv},
+  author        = {Bernhard Kerbl and Georgios Kopanas and Thomas Leimkühler and George Drettakis},
+  eprint        = {2308.04079},
+  primaryclass  = {cs.GR},
+  title         = {3D Gaussian Splatting for Real-Time Radiance Field Rendering},
+  url           = {https://arxiv.org/abs/2308.04079},
+  year          = {2023}
+}
 
 % Diffusion based methods:
 
+@misc{stablediffusion,
+  archiveprefix = {arXiv},
+  author        = {Robin Rombach and Andreas Blattmann and Dominik Lorenz and Patrick Esser and Björn Ommer},
+  eprint        = {2112.10752},
+  primaryclass  = {cs.CV},
+  title         = {High-Resolution Image Synthesis with Latent Diffusion Models},
+  year          = {2021}
+}
+
+@article{t2iadapter,
+  author  = {Mou, Chong and Wang, Xintao and Xie, Liangbin and Wu, Yanze and Zhang, Jian and Qi, Zhongang and Shan, Ying and Qie, Xiaohu},
+  journal = {arXiv preprint arXiv:2302.08453},
+  title   = {T2i-adapter: Learning adapters to dig out more controllable ability for text-to-image diffusion models},
+  year    = {2023}
+}
+
+@misc{controlnet,
+  author    = {Lvmin Zhang and Anyi Rao and Maneesh Agrawala},
+  booktitle = {IEEE International Conference on Computer Vision (ICCV)},
+  title     = {Adding Conditional Control to Text-to-Image Diffusion Models},
+  year      = {2023}
+}
+
+@article{mvdream,
+  author  = {Shi, Yichun and Wang, Peng and Ye, Jianglong and Mai, Long and Li, Kejie and Yang, Xiao},
+  journal = {arXiv:2308.16512},
+  title   = {MVDream: Multi-view Diffusion for 3D Generation},
+  year    = {2023}
+}
+
+@article{imagedream,
+  author  = {Wang, Peng and Shi, Yichun},
+  journal = {arXiv preprint arXiv:2312.02201},
+  title   = {ImageDream: Image-Prompt Multi-view Diffusion for 3D Generation},
+  year    = {2023}
+}
+
 @misc{novelviewsynthesisdiffusion,
-      title={Novel View Synthesis with Diffusion Models}, 
-      author={Daniel Watson and William Chan and Ricardo Martin-Brualla and Jonathan Ho and Andrea Tagliasacchi and Mohammad Norouzi},
-      year={2022},
-      eprint={2210.04628},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2210.04628}, 
+  archiveprefix = {arXiv},
+  author        = {Daniel Watson and William Chan and Ricardo Martin-Brualla and Jonathan Ho and Andrea Tagliasacchi and Mohammad Norouzi},
+  eprint        = {2210.04628},
+  primaryclass  = {cs.CV},
+  title         = {Novel View Synthesis with Diffusion Models},
+  url           = {https://arxiv.org/abs/2210.04628},
+  year          = {2022}
 }
 
 @misc{zero1to3,
-      title={Zero-1-to-3: Zero-shot One Image to 3D Object}, 
-      author={Ruoshi Liu and Rundi Wu and Basile Van Hoorick and Pavel Tokmakov and Sergey Zakharov and Carl Vondrick},
-      year={2023},
-      eprint={2303.11328},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV}
+  archiveprefix = {arXiv},
+  author        = {Ruoshi Liu and Rundi Wu and Basile Van Hoorick and Pavel Tokmakov and Sergey Zakharov and Carl Vondrick},
+  eprint        = {2303.11328},
+  primaryclass  = {cs.CV},
+  title         = {Zero-1-to-3: Zero-shot One Image to 3D Object},
+  year          = {2023}
 }
 
 @article{cat3d,
-  title={Cat3d: Create anything in 3d with multi-view diffusion models},
-  author={Gao, Ruiqi and Holynski, Aleksander and Henzler, Philipp and Brussee, Arthur and Martin-Brualla, Ricardo and Srinivasan, Pratul and Barron, Jonathan T and Poole, Ben},
-  journal={arXiv preprint arXiv:2405.10314},
-  year={2024}
+  author  = {Gao, Ruiqi and Holynski, Aleksander and Henzler, Philipp and Brussee, Arthur and Martin-Brualla, Ricardo and Srinivasan, Pratul and Barron, Jonathan T and Poole, Ben},
+  journal = {arXiv preprint arXiv:2405.10314},
+  title   = {Cat3d: Create anything in 3d with multi-view diffusion models},
+  year    = {2024}
 }
 
 @misc{viewcrafter,
-      title={ViewCrafter: Taming Video Diffusion Models for High-fidelity Novel View Synthesis}, 
-      author={Wangbo Yu and Jinbo Xing and Li Yuan and Wenbo Hu and Xiaoyu Li and Zhipeng Huang and Xiangjun Gao and Tien-Tsin Wong and Ying Shan and Yonghong Tian},
-      year={2024},
-      eprint={2409.02048},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2409.02048}, 
+  archiveprefix = {arXiv},
+  author        = {Wangbo Yu and Jinbo Xing and Li Yuan and Wenbo Hu and Xiaoyu Li and Zhipeng Huang and Xiangjun Gao and Tien-Tsin Wong and Ying Shan and Yonghong Tian},
+  eprint        = {2409.02048},
+  primaryclass  = {cs.CV},
+  title         = {ViewCrafter: Taming Video Diffusion Models for High-fidelity Novel View Synthesis},
+  url           = {https://arxiv.org/abs/2409.02048},
+  year          = {2024}
+}
+
+@misc{videolatentdiffusion,
+  archiveprefix = {arXiv},
+  author        = {Andreas Blattmann and Robin Rombach and Huan Ling and Tim Dockhorn and Seung Wook Kim and Sanja Fidler and Karsten Kreis},
+  eprint        = {2304.08818},
+  primaryclass  = {cs.CV},
+  title         = {Align your Latents: High-Resolution Video Synthesis with Latent Diffusion Models},
+  url           = {https://arxiv.org/abs/2304.08818},
+  year          = {2023}
 }
 
 @article{mvadapter,
-  title={MV-Adapter: Multi-view Consistent Image Generation Made Easy},
-  author={Huang, Zehuan and Guo, Yuanchen and Wang, Haoran and Yi, Ran and Ma, Lizhuang and Cao, Yan-Pei and Sheng, Lu},
-  journal={arXiv preprint arXiv:2412.03632},
-  year={2024}
+  author  = {Huang, Zehuan and Guo, Yuanchen and Wang, Haoran and Yi, Ran and Ma, Lizhuang and Cao, Yan-Pei and Sheng, Lu},
+  journal = {arXiv preprint arXiv:2412.03632},
+  title   = {MV-Adapter: Multi-view Consistent Image Generation Made Easy},
+  year    = {2024}
 }
 
 
 % Data:
 
 @misc{objaversexl,
-      title={Objaverse-XL: A Universe of 10M+ 3D Objects}, 
-      author={Matt Deitke and Ruoshi Liu and Matthew Wallingford and Huong Ngo and Oscar Michel and Aditya Kusupati and Alan Fan and Christian Laforte and Vikram Voleti and Samir Yitzhak Gadre and Eli VanderBilt and Aniruddha Kembhavi and Carl Vondrick and Georgia Gkioxari and Kiana Ehsani and Ludwig Schmidt and Ali Farhadi},
-      year={2023},
-      eprint={2307.05663},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2307.05663}, 
+  archiveprefix = {arXiv},
+  author        = {Matt Deitke and Ruoshi Liu and Matthew Wallingford and Huong Ngo and Oscar Michel and Aditya Kusupati and Alan Fan and Christian Laforte and Vikram Voleti and Samir Yitzhak Gadre and Eli VanderBilt and Aniruddha Kembhavi and Carl Vondrick and Georgia Gkioxari and Kiana Ehsani and Ludwig Schmidt and Ali Farhadi},
+  eprint        = {2307.05663},
+  primaryclass  = {cs.CV},
+  title         = {Objaverse-XL: A Universe of 10M+ 3D Objects},
+  url           = {https://arxiv.org/abs/2307.05663},
+  year          = {2023}
 }
 
 @inproceedings{omniobject3d,
-    author = {Tong Wu and Jiarui Zhang and Xiao Fu and Yuxin Wang and Jiawei Ren, 
-    Liang Pan and Wayne Wu and Lei Yang and Jiaqi Wang and Chen Qian and Dahua Lin and Ziwei Liu},
-    title = {OmniObject3D: Large-Vocabulary 3D Object Dataset for Realistic Perception, 
-    Reconstruction and Generation},
-    booktitle={IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
-    year={2023}
+  author    = {Tong Wu and Jiarui Zhang and Xiao Fu and Yuxin Wang and Jiawei Ren, 
+               Liang Pan and Wayne Wu and Lei Yang and Jiaqi Wang and Chen Qian and Dahua Lin and Ziwei Liu},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  title     = {OmniObject3D: Large-Vocabulary 3D Object Dataset for Realistic Perception, 
+               Reconstruction and Generation},
+  year      = {2023}
 }

@@ -1,35 +1,76 @@
 \Chapter{Related Work}\label{chapter:related}
 
-In this chapter, we review existing approaches to multi-view image generation and novel view synthesis. We first discuss traditional SLAM-based methods of novel view synthesis (Section X.1), followed by prompt-image based generative models for view synthesis (Section X.2), with particular emphasis on adapter based methods to fine-tune diffusion models to generate views from a single image (Section X.3). Finally, we analyze the limitations of current methods and identify research gaps that our work aims to address (Section X.4).
+In this chapter, I review existing approaches to multi-view image generation and novel view synthesis. Starting with traditional SLAM-based methods for novel view synthesis (Section \ref{sec:slam}), followed by prompt-image based generative models for view synthesis (Section \ref{sec:prompt-image}), with particular emphasis on adapter-based methods to fine-tune diffusion models to generate views conditioned on a single image (Section \ref{sec:adapters}). Finally, I analyze the limitations of current methods and identify research gaps that my work aims to address (Section \ref{sec:limitations}).
 
-The general idea of novel view synthesis is to generate a new view of a scene from a set of multi-view images. 
-The main challenge is to handle the scene's 3D structure and the camera's motion.
+\section{SLAM-based Solutions for Novel View Synthesis}\label{sec:slam}
 
+Traditional approaches to novel view synthesis have relied heavily on Structure from Motion (SfM) and Simultaneous Localization and Mapping (SLAM) techniques. These methods focus on reconstructing 3D geometry from multiple images and then rendering novel views based on this geometry.
 
+Early works in this domain, such as those described by Hartley and Zisserman \cite{multipleviewgeometry}, established the mathematical foundations for structure from motion algorithms. These approaches typically involve feature extraction (using methods like SIFT \cite{sift}, ORB \cite{orb}, etc.), matching across images, camera pose estimation, and 3D reconstruction through triangulation. While these methods provide geometrically accurate reconstructions, they often struggle with texturing and rendering photorealistic novel views, especially in regions with limited observations or complex materials. 
+These methods are not able to handle sparse inputs (e.g., a single image or a few images) and require dense multi-view captures (often hundreds of images) to create high-quality 3D representations. Another limitation is the time it takes to run these algorithms, especially if we match features across many high resolution images.
 
-\section{SLAM-based solutions}
-
-
-\section{Image-prompt based generative models}
-
-
-\section{Adapters for multi-view image generation}
+More recent advancements in Neural Radiance Fields (NeRF) \cite{nerf} have significantly improved the quality of novel view synthesis by representing scenes as continuous volumetric functions that map 3D coordinates and viewing directions to color and density values. However, NeRF and its variants typically require dense multi-view captures (often hundreds of images) to create high-quality 3D representations, limiting their practical applicability in scenarios where only a few images are available.
 
 
+\section{Image-Prompt Based Generative Models}\label{sec:prompt-image}
+
+The emergence of powerful diffusion models has revolutionized the field of image generation, including novel view synthesis. These models have demonstrated remarkable capabilities in generating high-quality images conditioned on various inputs, such as text prompts, reference images, or camera poses.
 
 
+\subsection{Text-to-Image and Image-to-Image Models}
 
-Methods:
-- Geometry based (Structure from motion)
-- Learning based (Diffusion models)
+Text-to-image diffusion models like Stable Diffusion \cite{stablediffusion} have shown impressive capabilities in generating diverse and high-quality images from textual descriptions. Building upon these foundations, several works have extended these models to handle image-to-image translation tasks, where a reference image serves as an additional conditioning signal.
 
-- fixed camera angles
-- variable camera angles (SLAM based)
+Zero-1-to-3 \cite{zero1to3} pioneered the approach of conditioning diffusion models on both a reference image and camera pose information to generate novel views. This method demonstrated the potential of leveraging pre-trained text-to-image models for novel view synthesis without requiring explicit 3D reconstruction. However, it often struggles with maintaining geometric consistency across generated views.
 
 
+\subsection{Multi-view Diffusion Models}
+
+To address the limitations of single-view approaches, several works have focused on developing multi-view diffusion models that can generate multiple consistent views simultaneously.
+
+MVDream \cite{mvdream} extends the self-attention mechanism in diffusion models to operate across multiple views, enabling the generation of 3D-consistent images. By jointly modeling multiple views, this approach significantly improves geometric consistency compared to methods that generate each view independently.
+
+Similarly, ViewCrafter \cite{viewcrafter} combines video latent diffusion models \cite{videolatentdiffusion} with 3D point cloud priors to generate high-fidelity and consistent novel views. By leveraging the explicit 3D information provided by point clouds and the generative capabilities of video diffusion models, ViewCrafter achieves precise control of camera poses and generates high-quality novel views.
+
+CAT3D \cite{cat3d} takes a different approach by simulating a real-world capture process with a multi-view diffusion model. Given one or three input images and a set of target novel viewpoints, this model generates highly consistent novel views that can be used as input to robust 3D reconstruction techniques.
+
+While these multi-view diffusion models have shown impressive results, they typically require full fine-tuning of pre-trained text-to-image models, which is computationally expensive and may lead to degradation in image quality due to the scarcity of high-quality 3D data.
+
+\section{Adapter-based Methods for Multi-view Generation}\label{sec:adapters}
+
+To address the limitations of full fine-tuning approaches, recent works have explored adapter-based methods that allow for more efficient adaptation of pre-trained models to specific tasks while preserving their original capabilities.
+
+\subsection{Adapter Mechanisms in Diffusion Models}
+
+Adapters are lightweight modules that can be inserted into pre-trained models to adapt them to new tasks without modifying the original network parameters. This approach has gained popularity in natural language processing and has also been applied to diffusion models for various image generation tasks.
+
+ControlNet \cite{controlnet} introduced a method to add spatial conditioning to text-to-image diffusion models by training additional control modules that are connected to the original UNet backbone. This approach allows for precise control over the generated images while preserving the original model's capabilities.
+
+Similarly, T2I-Adapter \cite{t2iadapter} proposed a more modular approach where adapters are trained separately and can be combined to provide multiple forms of control simultaneously. These methods have demonstrated the effectiveness of adapter-based approaches for controlled image generation.
+
+\subsection{Multi-view Adapters}
+
+Building upon the success of adapter mechanisms, MV-Adapter \cite{mvadapter} introduced the first adapter-based solution for multi-view image generation. Unlike previous approaches that make invasive modifications to pre-trained text-to-image models and require full fine-tuning, MV-Adapter enhances these models with a plug-and-play adapter that preserves the original network structure and feature space.
+
+MV-Adapter employs a decoupled attention mechanism, where the original spatial self-attention layers are retained, and new multi-view attention layers are created by duplicating the structure and weights of the original layers. These layers are organized in a parallel architecture, allowing the adapter to inherit the powerful priors of the pre-trained self-attention layers while efficiently learning geometric knowledge.
+
+Additionally, MV-Adapter introduces a unified condition encoder that seamlessly integrates camera parameters and geometric information, facilitating applications such as text and image-based 3D generation and texturing. By updating fewer parameters, MV-Adapter enables efficient training and preserves the prior knowledge embedded in pre-trained models, mitigating overfitting risks.
 
 
+\section{Limitations and Research Gaps}\label{sec:limitations}
 
-X~\cite{multipleviewgeometry} 
-~\cite{novelviewsynthesisdiffusion, zero1to3, cat3d, viewcrafter, mvadapter}
-\cite{mvadapter}.
+Despite the significant progress in multi-view image generation and novel view synthesis, several limitations and research gaps remain:
+
+\begin{enumerate}
+    \item \textbf{Computational Efficiency}: Full fine-tuning of diffusion models for multi-view generation is computationally expensive, especially when working with large base models and high-resolution images. While first adapter-based method MV-Adapter has improved efficiency of training, there is still room for improvement.
+
+    \item \textbf{Geometric Consistency}: Maintaining geometric consistency across generated views remains a challenge, particularly when generating views from significantly different perspectives. Current methods often struggle with complex occlusions, reflective surfaces and fine geometric details.
+
+    \item \textbf{Sparse Input Handling}: Most existing methods require either dense multi-view captures or make strong assumptions about the scene structure. There is a need for methods that can effectively handle sparse inputs (e.g., a single image or a few images) while generating high-quality novel views.
+
+    \item \textbf{Integration of Geometric Priors}: While some methods incorporate geometric information through camera poses or point clouds, the effective integration of these priors with generative models remains an open research question.
+
+\end{enumerate}
+
+
+My work aims to address these limitations by developing a method that combines the efficiency of adapter-based approaches with the geometric consistency provided by point cloud priors. Specifically, I propose to extend the MV-Adapter framework by incorporating point cloud information as an additional conditioning signal, similar to the approach used in ControlNet. This will allow for more precise control over the generated views while maintaining the computational efficiency of adapter-based methods.
