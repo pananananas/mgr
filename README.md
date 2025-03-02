@@ -56,10 +56,7 @@ Praca jest przygotowana z zachowaniem zalecanych wymogów edytorskich przyjętyc
 
 
 
-
-
-# Wniosek o zmianę tematu
-
+# Mój temat pracy:
 
 ## Tytuł: 
 Metoda generowania obrazów na podstawie wielu widoków warunkowych
