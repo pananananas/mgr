@@ -11,11 +11,15 @@
 \selectlanguage{english}
 
 % Kodowanie dokumentu
-\usepackage[utf8]{inputenc} 
-\usepackage[T1]{fontenc} 
+% \usepackage[utf8]{inputenc} 
+% \usepackage[T1]{fontenc} 
+% \usepackage{lmodern}
 
-% Dowolny rozmiar czcionek, kodowanie znaków
-\usepackage{lmodern}
+% Unicode support for LuaLaTeX
+\usepackage{fontspec}
+\setmainfont{Latin Modern Roman}
+\setsansfont{Latin Modern Sans}
+\setmonofont{Latin Modern Mono}
 
 % Polskie wcięcia akapitów
 \usepackage{indentfirst}
@@ -38,6 +42,9 @@
 % Fixes/improves amsmath
 \usepackage{mathtools}
 
+
+% Markdown
+\usepackage[smartEllipses,hybrid]{markdown}
 
 % ***************************************************************************************************
 % Kolory  
@@ -313,7 +320,7 @@
 \hypersetup{
 	colorlinks	=	true,					% Koloruje tekst zamiast tworzyć ramki.
 	linkcolor	=	blue,					% Kolory: referencji,
-    citecolor	=	blue,					% cytowań,
+    citecolor	=	red,					% cytowań,
 	urlcolor	=	blue					% hiperlinków.
 }
 
@@ -470,7 +477,7 @@
 \usepackage[nocompress]{cite}
 \usepackage{url}
 \usepackage{color,soul}
-\usepackage{svg}
+\usepackage[inkscapelatex=false]{svg}
 \usepackage{tabto}
 \usepackage{wrapfig}
 

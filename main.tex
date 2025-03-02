@@ -1,6 +1,6 @@
 \documentclass[12pt, twoside]{book}
 \input{latex-settings.tex}
-
+% chktex-file -g
 \frontmatter
 %check the current front page here:
 %https://wiz.pwr.edu.pl/en/students/thesis
@@ -11,32 +11,34 @@
 % \doublepage
 \includepdf[pages={1}]{title_page/pd_mgr_en.pdf}	
 \doublepage
-% Add table of contents
+
 \pagestyle{tableOfContentStyle}
-% Add abstract
+
 \pagenumbering{Roman}
 \input{chapters/abstract.tex}
+
 \doublepage
 \tableofcontents 
 \doublepage
-% Set page style 
 \pagestyle{custom}
 \mainmatter
  
-% Create chapters:
+% Chapters:
+% \markdownInput{chapters/introduction.md}
 \input{chapters/introduction.tex}
 \input{chapters/related-work.tex}
 \input{chapters/chapter1/chapter1_main.tex}
 \input{chapters/conclusions.tex}
+
+
+
+
 % Redefine plain for 1st bibliography page style
 \resetformatting
-% Please read :
-%https://www.overleaf.com/learn/latex/Bibliography_management_with_bibtex
 \pagestyle{bibliographyStyle}
 \bibliographystyle{abbrv}
 \bibliography{bibliography}
 
-% Add list of figures and tables
 \pagestyle{custom}
 \newpage
 \pagestyle{ListofFiguresStyle}
