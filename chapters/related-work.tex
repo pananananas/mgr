@@ -1,6 +1,6 @@
 \Chapter{Related Work}\label{chapter:related}
 
-In this chapter, I review existing approaches to multi-view image generation and novel view synthesis. Starting with traditional SLAM-based methods for novel view synthesis (Section \ref{sec:slam}), followed by prompt-image based generative models for view synthesis (Section \ref{sec:prompt-image}), with particular emphasis on adapter-based methods to fine-tune diffusion models to generate views conditioned on a single image (Section \ref{sec:adapters}). Finally, I analyze the limitations of current methods and identify research gaps that my work aims to address (Section \ref{sec:limitations}).
+In this chapter, I review existing approaches to multi-view image generation and novel view synthesis. Starting with traditional SLAM-based methods for novel view synthesis (Section \ref{sec:slam}), followed by text-to-image generative models for view synthesis (Section \ref{sec:text-to-image}), with particular emphasis on adapter-based methods to fine-tune diffusion models to generate views conditioned on a single image (Section \ref{sec:adapters}). Finally, I analyze the limitations of current methods and identify research gaps that my work aims to address (Section \ref{sec:limitations}).
 
 \section{SLAM-based Solutions for Novel View Synthesis}\label{sec:slam}
 
@@ -12,7 +12,7 @@ These methods are not able to handle sparse inputs (e.g., a single image or a fe
 More recent advancements in Neural Radiance Fields (NeRF) \cite{nerf} have significantly improved the quality of novel view synthesis by representing scenes as continuous volumetric functions that map 3D coordinates and viewing directions to color and density values. However, NeRF and its variants typically require dense multi-view captures (often hundreds of images) to create high-quality 3D representations, limiting their practical applicability in scenarios where only a few images are available.
 
 
-\section{Image-Prompt Based Generative Models}\label{sec:prompt-image}
+\section{Text-to-Image Generative Models}\label{sec:text-to-image}
 
 The emergence of powerful diffusion models has revolutionized the field of image generation, including novel view synthesis. These models have demonstrated remarkable capabilities in generating high-quality images conditioned on various inputs, such as text prompts, reference images, or camera poses.
 
@@ -36,7 +36,7 @@ CAT3D \cite{cat3d} takes a different approach by simulating a real-world capture
 
 While these multi-view diffusion models have shown impressive results, they typically require full fine-tuning of pre-trained text-to-image models, which is computationally expensive and may lead to degradation in image quality due to the scarcity of high-quality 3D data.
 
-\section{Adapter-based Methods for Multi-view Generation}\label{sec:adapters}
+\section{Adapter-based Methods for Image Generation}\label{sec:adapters}
 
 To address the limitations of full fine-tuning approaches, recent works have explored adapter-based methods that allow for more efficient adaptation of pre-trained models to specific tasks while preserving their original capabilities.
 

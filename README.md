@@ -2,8 +2,18 @@
 
 Aktualna wersja pracy w pliku `main.pdf`.
 
+# Struktura pracy
 
-
+- Title page
+- Abstract (pl and en)
+- Introduction
+- Related work
+- Proposed method
+- Data preparation
+- Experiments
+- Results
+- Conclusions and Future Work
+- Bibliography
 
 
 # Wymagania ze strony pwr:
