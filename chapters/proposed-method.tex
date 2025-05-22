@@ -4,6 +4,24 @@ In this chapter, I describe the proposed method.
 
 \section{Overview}
 
+\section{Limitations of Previous Methods}\label{sec:limitations}
+
+Despite the significant progress in multi-view image generation and novel view synthesis, several limitations and research gaps remain:
+
+\begin{enumerate}
+    \item \textbf{Computational Efficiency}: Full fine-tuning of diffusion models for multi-view generation is computationally expensive, especially when working with large base models and high-resolution images. While first adapter-based method MV-Adapter has improved efficiency of training, there is still room for improvement.
+
+    \item \textbf{Geometric Consistency}: Maintaining geometric consistency across generated views remains a challenge, particularly when generating views from significantly different perspectives. Current methods often struggle with complex occlusions, reflective surfaces and fine geometric details.
+
+    \item \textbf{Sparse Input Handling}: Most existing methods require either dense multi-view captures or make strong assumptions about the scene structure. There is a need for methods that can effectively handle sparse inputs (e.g., a single image or a few images) while generating high-quality novel views.
+
+    \item \textbf{Integration of Geometric Priors}: While some methods incorporate geometric information through camera poses or point clouds, the effective integration of these priors with generative models remains an open research question.
+
+\end{enumerate}
+
+
+My work aims to address these limitations by developing a method that combines the efficiency of adapter-based approaches with the geometric consistency provided by point cloud priors. Specifically, I propose to extend the MV-Adapter framework by incorporating point cloud information as an additional conditioning signal, similar to the approach used in ControlNet. This will allow for more precise control over the generated views while maintaining the computational efficiency of adapter-based methods.
+
 \section{Multi-View Image Generation}
 
 \section{Conditional Multi-View Image Generation}
