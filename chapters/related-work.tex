@@ -197,24 +197,57 @@ Modern approaches of 3D object generation, such as InstantMesh \cite{instantmesh
 
 \section{Deep Generative Models for Image Synthesis}\label{sec:text-to-image}
 
-The emergence of powerful diffusion models has revolutionized the
-field of image generation, including novel view synthesis. These
-models have demonstrated remarkable capabilities in generating
-high-quality images conditioned on various inputs, such as text
-prompts, reference images, or camera poses.
+The development of deep learning methods has led to remarkable progress in generative modeling, enabling the synthesis of highly realistic and diverse images. Among the various approaches, Generative Adversarial Networks (GANs), Variational Autoencoders (VAEs), and Diffusion Models have emerged as the most prominent. While GANs and VAEs have laid significant groundwork and continue to be influential, this section will primarily focus on diffusion models, given their state-of-the-art performance in image quality and controllability, and their direct relevance to the multi-view synthesis tasks explored in this thesis.
+
+\subsection{Generative Adversarial Networks (GANs) and Variational Autoencoders (VAEs)}
+
+Generative Adversarial Networks (GANs) \cite{gan} consist of two neural networks, a generator and a discriminator, trained in a competitive setting. The generator aims to produce realistic images, while the discriminator tries to distinguish between real images from the training dataset and fake images produced by the generator. Through this adversarial process, the generator learns to create increasingly plausible images. GANs are known for generating sharp images but often suffer from training instability.
+
+Variational Autoencoders (VAEs) \cite{vae} are another class of generative models that learn a probabilistic mapping from a high-dimensional data space (e.g., images) to a lower-dimensional latent space, and then back to the data space. A VAE consists of an encoder that compresses the input data into a latent representation (typically a mean and variance defining a Gaussian distribution) and a decoder that reconstructs the data from samples drawn from this latent distribution. They are trained to maximize the evidence lower bound (ELBO), which involves a reconstruction loss and a regularization term (KL divergence) that encourages the latent space to be smooth and well-behaved. VAEs generally offer more stable training than GANs and can learn a meaningful latent space, but often produce slightly blurrier images. VAEs play a crucial role in the architecture of Latent Diffusion Models.
 
 \subsection{Diffusion Models}
+Diffusion models have recently become the dominant paradigm in high-fidelity image generation. They are inspired by non-equilibrium thermodynamics, specifically diffusion processes.
 
-UNET
+\subsubsection{Core Concept: The Diffusion Process}
+The core idea behind diffusion models involves two processes: a forward (or diffusion) process and a reverse (or denoising) process.
+In the \textbf{forward process}, a known image $x_0$ from the dataset is gradually perturbed by adding small amounts of Gaussian noise over a sequence of $T$ steps. This process progressively corrupts the image until, at step $T$, it becomes indistinguishable from pure isotropic Gaussian noise. The parameters of this noising process are fixed.
 
-\subsection{Text-to-Image Diffusion Models}
+The \textbf{reverse process} aims to learn to reverse this noising. Starting from pure noise (equivalent to $x_T$), a neural network is trained to gradually denoise the signal, step-by-step, eventually producing a realistic image (an approximation of $x_0$). This learned denoising process is what allows the model to generate new images. Figure \ref{fig:diffusion-process} illustrates this concept.
 
-Text-to-image diffusion models like Stable Diffusion
-\cite{stablediffusion} have shown impressive capabilities in
-generating diverse and high-quality images from textual descriptions.
-Building upon these foundations, several works have extended these
-models to handle image-to-image translation tasks, where a reference
-image serves as an additional conditioning signal.
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/related-work/diffusion-process.png}
+  \caption{The forward (noising) and reverse (denoising/generation) stages of a diffusion model. The forward process gradually adds noise to an image until it becomes pure noise. The reverse process learned by a neural net to denoise, step-by-step, to generate an image from noise.}
+  \label{fig:diffusion-process}
+\end{figure}
+
+\subsubsection{The U-Net Architecture}
+The neural network responsible for predicting the noise (or the denoised image) at each step in the reverse process is typically a U-Net architecture \cite{unet}. The U-Net, originally developed for biomedical image segmentation, features an encoder-decoder structure with skip (residual) connections. The encoder path progressively downsamples the input, capturing contextual information, while the decoder path progressively upsamples, localizing information. The skip connections concatenate features from the encoder to corresponding layers in the decoder, allowing the network to combine high-level semantic information with low-level detail, which is crucial for accurately predicting the noise and preserving image fidelity during the denoising steps.
+
+\subsubsection{Training Objective and Loss Function}
+The training objective of the diffusion model is to learn the conditional probability distribution $p_\theta(x_{t-1}|x_t)$, which represents the probability of the previous, less noisy state $x_{t-1}$ given the current noisy state $x_t$. In practice, this is often simplified to training the U-Net to predict the noise $\epsilon$ that was added to an image $x_0$ to produce $x_t$ at a given timestep $t$. The loss function is typically the Mean Squared Error (MSE) between the true added noise $\epsilon$ and the noise $\epsilon_\theta(x_t, t)$ predicted by the U-Net:
+\[ L = \mathbb{E}_{t \sim [1, T], x_0 \sim q(x_0), \epsilon \sim \mathcal{N}(0, I)} [\|\epsilon - \epsilon_\theta(x_t, t)\|^2] \]
+where $x_t = \sqrt{\bar{\alpha}_t}x_0 + \sqrt{1-\bar{\alpha}_t}\epsilon$, and $\bar{\alpha}_t$ are parameters from the noise schedule.
+
+\subsubsection{Conditional Generation: Text-to-Image Synthesis}
+To guide the image generation process, diffusion models can be conditioned on various inputs, most notably text prompts. This is the foundation of text-to-image synthesis.
+A crucial component for text conditioning is a powerful text encoder that can convert textual descriptions into rich numerical representations (embeddings). Contrastive Language-Image Pre-training (CLIP) \cite{clip} is widely used for this purpose. CLIP is trained on a massive dataset of image-text pairs to learn a shared embedding space where semantically similar images and texts are close together.
+
+The text embeddings from CLIP are then integrated into the U-Net, typically using cross-attention mechanisms. In these layers, the image representation at an intermediate layer of the U-Net queries the text embedding, allowing the model to align parts of the image with relevant words or phrases in the prompt. This enables fine-grained control over the generated image content based on the textual input.
+
+\subsection{Latent Diffusion Models (LDMs)}\label{ssec:ldm}
+While standard diffusion models operate directly in the pixel space of images, this can be computationally very expensive, especially for high-resolution images, as the U-Net needs to process large tensors. Latent Diffusion Models (LDMs) \cite{stablediffusion}, such as Stable Diffusion, address this challenge by performing the diffusion and denoising process in a lower-dimensional latent space.
+
+LDMs employ a pre-trained autoencoder, typically a VAE. The VAE's encoder first compresses a high-resolution image from pixel space into a compact latent representation. The diffusion process (both forward and reverse) then occurs entirely within this latent space. Once the reverse denoising process generates a target latent representation from noise, the VAE's decoder maps this latent representation back into the high-resolution pixel space to produce the final image. Figure \ref{fig:ldm-architecture} depicts the architecture of an LDM.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{images/related-work/LDM-detailed.png}
+  \caption{Architecture of a Latent Diffusion Model (LDM). An image is first encoded into a latent space by a VAE encoder. The diffusion process (noising and denoising via U-Net) occurs in this latent space. The generated latent is then decoded back to pixel space by the VAE decoder. Conditioning, such as text embeddings from CLIP, is incorporated into the U-Net.}
+  \label{fig:ldm-architecture}
+\end{figure}
+
+By working in a compressed latent space, LDMs significantly reduce the computational burden during training and inference compared to pixel-space diffusion models. This makes it feasible to train powerful models on massive datasets and generate high-resolution images more efficiently, without a substantial loss in quality. The VAE ensures that the latent space is perceptually equivalent to the pixel space, and the diffusion model learns to generate high-quality latents within this space.
 
 \section{Conditioning Diffusion Models for Enhanced Control and New
 Tasks}\label{sec:conditioning-diffusion}
