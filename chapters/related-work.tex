@@ -249,108 +249,103 @@ LDMs employ a pre-trained autoencoder, typically a VAE. The VAE's encoder first 
 
 By working in a compressed latent space, LDMs significantly reduce the computational burden during training and inference compared to pixel-space diffusion models. This makes it feasible to train powerful models on massive datasets and generate high-resolution images more efficiently, without a substantial loss in quality. The VAE ensures that the latent space is perceptually equivalent to the pixel space, and the diffusion model learns to generate high-quality latents within this space.
 
-\section{Conditioning Diffusion Models for Enhanced Control and New
-Tasks}\label{sec:conditioning-diffusion}
+\section{Conditioning Diffusion Models for Enhanced Control and New Tasks}\label{sec:conditioning-diffusion}
 
-\subsection{Diverse Conditioning Signals}
+While textual prompts provide a powerful and intuitive way to guide diffusion models, the generation process can be conditioned on a much wider array of signals. This opens up possibilities for more fine-grained control over the output and enables new applications beyond text-to-image synthesis. This section explores several advanced conditioning mechanisms, focusing on image-based conditioning for detailed content and style control, and specialized techniques for incorporating geometric information, such as camera parameters, to enrich 2D diffusion models with 3D awareness.
 
-\subsection{Camera Parameter Encoding for 3D Awareness}
+\subsection{Image-based Conditioning for Fine-Grained Control}
+Conditioning on reference images allows for precise control over spatial layout, object appearance, color consistency, or artistic style, going beyond what is often achievable with text alone.
 
-\subsection{Lightweight Adaptation}
+\subsubsection{ControlNet}
+ControlNet \cite{controlnet} introduces a method to add diverse spatial conditioning to pre-trained text-to-image diffusion models. Instead of fine-tuning the original large model, ControlNet involves training smaller, task-specific auxiliary networks that are attached to the frozen U-Net backbone of the diffusion model, typically to its encoder blocks. These auxiliary networks take an input conditioning image (e.g., an edge map, human pose skeleton, depth map, or segmentation map) and produce feature maps that are then added to the corresponding features of the main U-Net. This approach allows the pre-trained model to be guided by the spatial information in the conditioning image while retaining its vast generative capabilities learned from large datasets. The original U-Net weights are locked, making ControlNet modules efficient to train and portable. Figure \ref{fig:controlnet-overview} provides a conceptual overview.
 
-To address the limitations of full fine-tuning approaches, recent
-works have explored adapter-based methods that allow for more
-efficient adaptation of pre-trained models to specific tasks while
-preserving their original capabilities.
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.4\textwidth]{images/related-work/controlnet.png}
+  \caption{Conceptual overview of ControlNet, showing how an additional control module processes an input condition (e.g., edges, pose) and injects guidance into a pre-trained diffusion model. (Adapted from Zhang et al. \cite{controlnet})}
+  \label{fig:controlnet-overview}
+\end{figure}
 
-Adapters are lightweight modules that can be inserted into
-pre-trained models to adapt them to new tasks without modifying the
-original network parameters. This approach has gained popularity in
-natural language processing and has also been applied to diffusion
-models for various image generation tasks.
+\subsubsection{IP-Adapter}
+IP-Adapter (Image Prompt Adapter) \cite{ipadapter} offers an effective way to condition diffusion models using an image prompt, allowing the model to generate images that align with the content or style of the reference image. It achieves this by introducing a lightweight adapter module that can be plugged into a pre-trained text-to-image model. The core idea is to decouple the cross-attention mechanisms used for text and image features. Image features, extracted by an image encoder (like CLIP \cite{clip} image encoder), are fed into new cross-attention layers that work in parallel with the original text cross-attention layers. This allows the model to draw information from both text and image prompts simultaneously or prioritize one over the other. IP-Adapter is efficient as it avoids fine-tuning the large base model and only trains the adapter parameters, making it a versatile tool for tasks like style transfer or subject-driven generation. Figure \ref{fig:ipadapter-concept} illustrates this concept.
 
-ControlNet \cite{controlnet} introduced a method to add spatial
-conditioning to text-to-image diffusion models by training additional
-control modules that are connected to the original UNet backbone.
-This approach allows for precise control over the generated images
-while preserving the original model's capabilities.
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.7\textwidth]{images/related-work/ipadapter.png}
+  \caption{Conceptual illustration of the IP-Adapter architecture, showing how image features extracted by an image encoder are integrated into the U-Net via dedicated cross-attention layers to guide the generation process. (Image based on the IP-Adapter concept)}
+  \label{fig:ipadapter-concept}
+\end{figure}
 
-Similarly, T2I-Adapter \cite{t2iadapter} proposed a more modular
-approach where adapters are trained separately and can be combined to
-provide multiple forms of control simultaneously. These methods have
-demonstrated the effectiveness of adapter-based approaches for
-controlled image generation.
+\subsubsection{CatVTON and UNet Feature Conditioning}
+A particularly relevant approach for image conditioning, especially for tasks requiring detailed transfer of appearance or garment characteristics, is found in methods like CatVTON \cite{catvton}. The key insight in such methods is to leverage the rich, hierarchical features learned by the denoising U-Net itself. When provided with a reference image (e.g., an image of a specific garment), features can be extracted from various layers of the U-Net as it processes this reference. These extracted features, which encode information about texture, shape, and style at multiple scales, are then used to condition the generation of a new image (e.g., the same garment, but worn by a person). This conditioning can be achieved by injecting these features into the corresponding layers of the U-Net during the denoising process of the target image, often using attention mechanisms or direct feature fusion. This technique allows for a powerful form of image-based control that is highly attuned to the diffusion model's internal representations, facilitating tasks like virtual try-on with impressive fidelity by directly utilizing the U-Net's understanding of visual elements.
 
-\section{Diffusion-based Multi-View Image
-Generation}\label{sec:multi-view-diffusion}
+\subsection{Modulating Network Activations}
+Feature-wise Linear Modulation (FiLM) \cite{film} is a general and effective technique for conditioning neural network activations. Instead of directly concatenating conditioning information or using complex gating mechanisms, FiLM applies a simple affine transformation to feature maps based on a conditioning input. Given a feature map $h$ from a layer in a neural network, and a conditioning vector $c$, a FiLM generator (typically a small neural network) produces a scale parameter $\gamma$ and a shift parameter $\beta$ from $c$. These parameters then modulate $h$ as follows: $FiLM(h) = \gamma \cdot h + \beta$. This allows the conditioning information $c$ to dynamically influence the behavior of the network layer by layer. FiLM is lightweight and can be integrated into various architectures to allow secondary inputs to control the processing of a primary input. Figure \ref{fig:film-layer} illustrates the internals of a FiLM layer.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.5\textwidth]{images/related-work/film.png}
+  \caption{The Feature-wise Linear Modulation (FiLM) layer. A conditioning input is processed by a FiLM generator to produce scale ($\gamma$) and shift ($\beta$) parameters, which then modulate the feature maps ($h$) of a main network. (Adapted from Perez et al. \cite{film})}
+  \label{fig:film-layer}
+\end{figure}
+
+This approach enabled image-based models to effectively integrate and act upon conditioning information from outside the image domain. For instance, by modulating visual features based on encoded text tokens, it empowered (at the time) state-of-the-art image question answering models to ground their visual processing in textual context.
+
+\subsubsection{FiLMed-UNet}
+The FiLM technique has also been effectively applied to U-Net architectures in the medical imaging domain, notably in the FiLMed-UNet paper by Lemay et al. \cite{filmedunet}. Their work focused on enhancing medical image segmentation by incorporating various forms of metadata as conditioning signals. FiLMed-UNet utilized patient-specific information, such as tumor type or the target organ for segmentation.
+
+The core idea was to make the U-Net's segmentation process adaptable and more informed by this external metadata. The metadata (e.g., one-hot encoded tumor type) was passed through a FiLM generator network, which produced scale ($\gamma$) and shift ($\beta$) parameters. These parameters then modulated the feature maps at different layers within the U-Net. This allowed the network to tailor its feature extraction and segmentation logic based on the provided metadata. For example, knowing the tumor type allowed the model to leverage type-specific visual characteristics, leading to improved segmentation accuracy. Furthermore, by conditioning on the desired output class (e.g., "segment kidney"), FiLMed-UNet demonstrated robustness in multi-task learning scenarios, even with missing labels for some tasks in the training data, and showed improved performance with limited annotations. While this application of FiLM is distinct from encoding camera parameters for 3D-aware synthesis, it highlights the versatility of FiLM in allowing neural networks to integrate and utilize diverse conditioning information to adapt their behavior for specialized tasks. Figure \ref{fig:filmed-unet-concept} shows a conceptual diagram.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.7\textwidth]{images/related-work/filmed-unet.png}
+  \caption{Conceptual diagram of a FiLMed-UNet. The metadata about patients are processed by a FiLM generator network, which outputs scale and shift parameters to modulate activations at various layers within the U-Net architecture, making the denoising process viewpoint-aware.}
+  \label{fig:filmed-unet-concept}
+
+\end{figure}
+
+\subsection{Camera Parameter Encoding for 3D Awareness}\label{ssec:camera_param_encoding}
+Making 2D diffusion models inherently 3D-aware is crucial for tasks like multi-view image generation. A key aspect of this is encoding camera parameters (Rotation R, Translation t) to guide the image generation process. Various methods focus on integrating this geometric information directly into the model's input or intermediate representations.
+
+\subsubsection{Pixel-Level Geometric Conditioning: Ray-based Approaches}
+This category of methods aims to provide detailed, per-pixel geometric information derived from camera parameters directly to the diffusion model.
+A prominent technique is the use of a \textit{raymap}, as demonstrated by Watson et al. \cite{novelviewsynthesisdiffusion} in 3DiM and also utilized in CAT3D \cite{cat3d}. The raymap is a tensor with the same spatial dimensions as the image or latent representation. At each (u,v) coordinate, it stores the 3D origin and 3D direction of the camera ray passing through that pixel. In CAT3D, these rays are computed relative to the camera pose of the first conditional image.
+To help the network learn high-frequency details associated with viewpoint changes, these ray origins and directions are often further processed using positional encodings.
+The resulting positionally encoded raymap can be concatenated as an additional input channel to the U-Net, alongside the noisy image or latent representation \cite{novelviewsynthesisdiffusion, cat3d}. This allows the model to learn a direct, spatially varying mapping from ray geometry to the target pixel output.
+% CAT3D \cite{cat3d} notes that such raymap conditioning generalizes better than using low-dimensional vector embeddings for camera pose, particularly for out-of-domain samples.
+
+\subsubsection{Global Camera Pose Conditioning}
+Alongside per-pixel data, global camera pose conditioning methods provide a more compact, holistic representation of the camera's viewpoint or transformation.
+One approach involves \textit{vectorized transformation embeddings}. For instance, Zero-1-to-3 \cite{zero1to3} encodes the relative camera viewpoint transformation \(T = [R|t]\) between an input view and a target view as a 4x4 matrix. This matrix is flattened into a 16-dimensional vector, which is then projected by a small Multi-Layer Perceptron (MLP) and added to the timestep embedding. This globally influences the diffusion process by providing context about the desired viewpoint change.
+Another technique employs \textit{decomposed pose vectors for attention mechanisms}. MV-Adapter \cite{mvadapter} represents each camera view using a 12-dimensional vector, which includes 3D camera coordinates and a 9D flattened rotation matrix. These vectors are processed by an MLP and then fed into multi-view attention layers as key and value components. This allows the model to explicitly attend to pose information when correlating features across different views, aiding in the generation of coherent multi-view imagery.
+
+\section{Diffusion-based Multi-View Image Generation}\label{sec:multi-view-diffusion}
+
+Building upon the camera parameter encoding techniques discussed in Section \ref{ssec:camera_param_encoding}, this section delves into specific diffusion-based models and architectures designed for generating single or multiple consistent views of a 3D scene or objects. These methods aim to leverage the generative power of diffusion models to synthesize novel perspectives, often with the goal of creating coherent 3D representations.
 
 \subsection{Single Reference Image Novel View Synthesis}
+Novel View Synthesis (NVS) from a single reference image is a challenging task that several diffusion-based approaches have tackled.
 
-Zero-1-to-3 \cite{zero1to3} pioneered the approach of conditioning
-diffusion models on both a reference image and camera pose
-information to generate novel views. This method demonstrated the
-potential of leveraging pre-trained text-to-image models for novel
-view synthesis without requiring explicit 3D reconstruction. However,
-it often struggles with maintaining geometric consistency across
-generated views.
+Zero-1-to-3 \cite{zero1to3}, an early pioneer in this area, conditions a latent diffusion model on a single reference image and a relative camera pose transformation \(T=[R|t]\) to generate a novel view. This model is fine-tuned from a pre-trained text-to-image model (Stable Diffusion). While demonstrating the potential for NVS without explicit 3D reconstruction, approaches like Zero-1-to-3 can sometimes face challenges in maintaining strong geometric consistency across widely varying generated views, a point often highlighted by subsequent multi-view generation methods \cite{imagedream, cat3d}.
+
+Concurrently, Watson et al. \cite{novelviewsynthesisdiffusion} proposed 3DiM, a diffusion model designed for NVS that operates in pixel space. It conditions on a single source RGB-D image (though it can function with RGB only) and an absolute target camera pose. 3DiM utilizes the raymap technique for camera conditioning, as detailed in Section \ref{ssec:camera_param_encoding}, by constructing a raymap containing per-pixel 3D origin and direction, which is then positionally encoded and concatenated with the input image to the U-Net \cite{novelviewsynthesisdiffusion}. The model is trained to predict the clean target image from a noised source image.
 
 \subsection{Coherent Multi-View Generation Architectures}
-% Camera encoding
+To improve consistency and enable robust 3D asset creation, several architectures focus on jointly generating or reasoning about multiple views simultaneously.
 
-To address the limitations of single-view approaches, several works
-have focused on developing multi-view diffusion models that can
-generate multiple consistent views simultaneously.
+MVDream, often cited as a foundational multi-view model \cite{imagedream, mvadapter, cat3d}, extends diffusion models to generate multiple (e.g., four orthogonal) views from a shared text prompt by incorporating multi-view attention mechanisms. It learns from both 2D images and 3D assets to enhance 3D consistency \cite{mvadapter}.
 
-MVDream \cite{mvdream} extends the self-attention mechanism in
-diffusion models to operate across multiple views, enabling the
-generation of 3D-consistent images. By jointly modeling multiple
-views, this approach significantly improves geometric consistency
-compared to methods that generate each view independently.
+Building on such concepts, ImageDream \cite{imagedream} introduces an image-prompt multi-view diffusion model. It takes a single image prompt and aims to generate multiple consistent views of an object. ImageDream leverages the canonical camera coordination (discussed in Section \ref{ssec:camera_param_encoding}) established by MVDream, where a default camera view corresponds to the object's front view. Its key architectural contribution is a multi-level image-prompt controller that integrates image features at global (CLIP global embedding), local (CLIP hidden features), and pixel (VAE encoded image latent) levels into the MVDream-like diffusion U-Net \cite{imagedream}. The pixel controller, for instance, concatenates the input image prompt's latent as an additional frame to the four target views, enabling 3D self-attention across all five frames. ImageDream employs Multi-View Score Distillation Sampling (MV-SDS) for reconstructing a NeRF from the generated views.
 
-Similarly, ViewCrafter \cite{viewcrafter} combines video latent
-diffusion models \cite{videolatentdiffusion} with 3D point cloud
-priors to generate high-fidelity and consistent novel views. By
-leveraging the explicit 3D information provided by point clouds and
-the generative capabilities of video diffusion models, ViewCrafter
-achieves precise control of camera poses and generates high-quality novel views.
+CAT3D \cite{cat3d} presents a multi-view diffusion model designed to simulate a real-world capture process by generating a large set of consistent novel views from one or more input images and specified target camera poses. Its architecture is similar to video latent diffusion models \cite{stablevideodiffusion}, employing 3D self-attention (2D in space and 1D corresponding to time across images) and is initialized from a pre-trained latent diffusion model. For camera conditioning, CAT3D uses the raymap approach (see Section \ref{ssec:camera_param_encoding}), where ray origins and directions are computed relative to the first conditional image's camera pose and concatenated channel-wise to the latents \cite{cat3d}. To generate a large number of views (e.g., 80 for single-image input, up to 960 for few-view), CAT3D can group target viewpoints and, for single-image inputs, may first autoregressively sample a set of anchor views before generating the remaining views. These generated views are then used as input to a robust 3D reconstruction pipeline (e.g., Zip-NeRF).
 
-CAT3D \cite{cat3d} takes a different approach by simulating a
-real-world capture process with a multi-view diffusion model. Given
-one or three input images and a set of target novel viewpoints, this
-model generates highly consistent novel views that can be used as
-input to robust 3D reconstruction techniques.
+ViewCrafter \cite{viewcrafter}, as noted by CAT3D \cite{cat3d}, combines video latent diffusion models with 3D point cloud priors. This approach aims to achieve high-fidelity and consistent novel views by leveraging explicit 3D information alongside the generative capabilities of video diffusion models, enabling precise camera control.
 
-While these multi-view diffusion models have shown impressive
-results, they typically require full fine-tuning of pre-trained
-text-to-image models, which is computationally expensive and may lead
-to degradation in image quality due to the scarcity of high-quality 3D data.
+While these architectures show impressive results, methods requiring full fine-tuning of large pre-trained models are expensive and may risk performance degradation if high-quality, large-scale 3D data for fine-tuning is scarce.
 
 \subsection{Specialized Multi-View Adapters}
+To mitigate the challenges of full fine-tuning, adapter-based methods offer a lightweight alternative for enabling pre-trained models with multi-view generation capabilities.
 
-Building upon the success of adapter mechanisms, MV-Adapter
-\cite{mvadapter} introduced the first adapter-based solution for
-multi-view image generation. Unlike previous approaches that make
-invasive modifications to pre-trained text-to-image models and
-require full fine-tuning, MV-Adapter enhances these models with a
-plug-and-play adapter that preserves the original network structure
-and feature space.
+MV-Adapter \cite{mvadapter} is a notable example, introducing a plug-and-play adapter for multi-view image generation that enhances pre-trained text-to-image diffusion models while preserving their original network structure and feature space. It employs a decoupled attention mechanism: the original spatial self-attention layers of the pre-trained model are kept frozen, and new multi-view attention layers are created by duplicating the structure and weights of these original layers. These new layers, organized in a parallel architecture, process features from multiple views (typically packed along the batch dimension) and learn geometric knowledge efficiently \cite{mvadapter}. 
 
-MV-Adapter employs a decoupled attention mechanism, where the
-original spatial self-attention layers are retained, and new
-multi-view attention layers are created by duplicating the structure
-and weights of the original layers. These layers are organized in a
-parallel architecture, allowing the adapter to inherit the powerful
-priors of the pre-trained self-attention layers while efficiently
-learning geometric knowledge.
-
-Additionally, MV-Adapter introduces a unified condition encoder that
-seamlessly integrates camera parameters and geometric information,
-facilitating applications such as text and image-based 3D generation
-and texturing. By updating fewer parameters, MV-Adapter enables
-efficient training and preserves the prior knowledge embedded in
-pre-trained models, mitigating overfitting risks.
-
-problems of the current MVD:
-- inconsistant lighting
-- poor geometric consistency
-- big model training requirements
+For encoding geometric information, MV-Adapter \cite{mvadapter} integrates camera parameters using raymaps, an approach also seen in methods like 3DiM \cite{novelviewsynthesisdiffusion} and CAT3D \cite{cat3d}. These raymaps can be positionally encoded and are then typically supplied as additional input channels to the U-Net, processed by the adapter's components. This method of providing direct geometric cues, combined with other conditioning signals like text or image embeddings processed through its attention mechanisms, allows for flexible control in tasks such as text-to-3D and image-to-3D generation. By updating significantly fewer parameters than full fine-tuning—primarily those of the adapter module—MV-Adapter enables efficient training, preserves the rich priors of the base model, and reduces the risk of overfitting.
