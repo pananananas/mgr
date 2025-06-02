@@ -3,3 +3,12 @@ _minted-main
 bib/dziekanat
 .DS_Store
 code/
+main.aux
+main.log
+main.out
+main.toc
+main.bbl
+main.blg
+main.fls
+main.lof
+main.lot

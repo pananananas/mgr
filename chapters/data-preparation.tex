@@ -8,11 +8,11 @@ The quality and nature of the data are paramount for training robust deep learni
 Two primary datasets form the backbone of this work: ObjaverseXL, a large-scale repository of 3D models utilized for training the generative model, and Google Scanned Objects (GSO), a collection of high-fidelity 3D scans employed in my work for validation purposes.
 
 \subsection{ObjaverseXL: A Large-Scale 3D Model Repository}\label{ssec:objaversexl-overview}
-ObjaverseXL \cite{objaversexl} is a vast, publicly accessible dataset comprising approximately 10 million 3D models. In order to use these models, one has to download them from their respective sources, which are often not straightforward. The models are stored in diverse online sources, including platforms like GitHub, Thingiverse, and Sketchfab, as shown in \ref{fig:objaversexl-overview}, resulting in a rich and varied collection that reflects a wide array of object categories, complexities, and artistic styles. Given its scale and diversity, ObjaverseXL serves as the primary source for the training data in this thesis.
+ObjaverseXL \cite{objaversexl} is a vast, publicly accessible dataset comprising approximately 10 million 3D models. In order to use these models, one has to download them from their respective sources. The models are stored in diverse online sources, including platforms like GitHub, Thingiverse, and Sketchfab, as shown in \ref{fig:objaversexl-overview}, resulting in a rich and varied collection that reflects a wide array of object categories, complexities, and artistic styles. Given its scale and diversity, ObjaverseXL serves as the primary source for the training data in this thesis.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.5\textwidth]{images/data/sankey-diagram-objaverse-sources.png}
+  \includegraphics[width=0.5\textwidth]{images/data/sankey-diagram-objaverse-sources.jpeg}
   \caption{Illustrative overview of ObjaverseXL model sources and diversity.}
   \label{fig:objaversexl-overview}
 \end{figure}
@@ -24,7 +24,7 @@ The Google Scanned Objects (GSO) dataset \cite{gso} consists of high-fidelity 3D
 The transformation of raw 3D models from ObjaverseXL into a usable training dataset involved a comprehensive processing pipeline. This pipeline encompassed several critical stages: model acquisition, normalization, view rendering with specific lighting considerations, quality control filtering, and finally, textual annotation. Each step was carefully designed to address potential issues and ensure the final dataset's suitability for training an effective multi-view diffusion model.
 
 \subsection{3D Model Acquisition and Initial Handling}\label{ssec:model-acquisition}
-The first step involved acquiring the 3D models from their respective sources as listed in the ObjaverseXL dataset. This task required scripting the download process due to the varied hosting platforms. The pipeline was designed to robustly handle common 3D model formats that typically support textures, including Object files ($.obj$), GLTF/GLB files ($.glb$, $.gltf$), Filmbox files ($.fbx$), and Collada files ($.dae$).
+The first step involved acquiring the 3D models from their respective sources as listed in the ObjaverseXL dataset. This task required scripting the download process due to the varied hosting platforms. The pipeline was designed to robustly handle common 3D model formats that typically support textures, including Object files (\texttt{.obj}), GLTF/GLB files (\texttt{.glb}, \texttt{.gltf}), Filmbox files (\texttt{.fbx}), and Collada files (\texttt{.dae}).
 
 A critical part of initial handling was standardizing the coordinate system. 3D models from diverse origins often have different conventions for which axis represents "up". To ensure consistency, all imported mesh objects underwent a corrective rotation of -90 degrees around the X-axis. This transformation was immediately applied to the objects, establishing a common "Z-up" orientation for all models before subsequent processing steps. A preliminary inspection of model metadata was also performed upon successful download, which sometimes provided hints for orientation if the automated correction was insufficient, though the Z-up convention was paramount.
 
@@ -41,7 +41,7 @@ This normalization was critical for several reasons. Firstly, it ensured that ob
 The core of the data generation process was rendering 2D images of each 3D model from multiple viewpoints.
 
 \subsubsection{Rendering Environment}\label{sssec:rendering-environment}
-All rendering tasks were performed using Blender \cite{blender}, a powerful open-source 3D creation suite. To automate and scale the process, Blender was operated in windowless (headless) mode. The BLENDER\_EEVEE rendering engine was chosen for its balance of speed and quality, making it suitable for generating a large volume of images. Render output was configured to $1024x1024$ pixels in $PNG$ format with $RGBA$ color mode, enabling transparency. The background was explicitly set to transparent.
+All rendering tasks were performed using Blender \cite{blender}, a powerful open-source 3D creation suite. To automate and scale the process, Blender was operated in windowless (headless) mode. The $BLENDER\_EEVEE$ rendering engine was chosen for its balance of speed and quality, making it suitable for generating a large volume of images. Render output was configured to $1024x1024$ pixels. Images were initially rendered with an alpha channel (e.g., to PNG format) to handle transparent backgrounds.
 
 Specific EEVEE settings were configured to balance quality and performance while ensuring clear depiction of the objects:
 \begin{itemize}
@@ -57,21 +57,21 @@ Key camera parameters included:
   \item \textbf{Focal Length}: 35mm.
   \item \textbf{Sensor Width}: 32mm.
   \item \textbf{Camera Distance}: Cameras were positioned at a fixed distance of 1.8 Blender units from the world origin. Given the 1x1x1 object normalization, this distance ensured the object was well-framed.
-  \item \textbf{Targeting}: A $TRACK_TO$ constraint was applied to the camera, compelling it to always point towards the world origin (0,0,0), keeping the object centered.
+  \item \textbf{Targeting}: A $TRACK\_TO$ constraint was applied to the camera, compelling it to always point towards the world origin (0,0,0), keeping the object centered.
 \end{itemize}
 
 To train a model capable of understanding objects from various perspectives and generalizing to different numbers of input views, images were rendered from a randomly selected set of predefined camera angles for each model. Three configurations were used for $6$, $8$ and $12$ views, with specific azimuth (horizontal rotation) and elevation alternating between small positive and negative values to cover the object from all sides. The camera is focused on the origin. The placement is shown in \ref{fig:camera-setups} and \ref{fig:camera-setups-up}.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.6\textwidth]{images/data/rendering-ortho.png}
+  \includegraphics[width=0.6\textwidth]{images/data/rendering-ortho.jpeg}
   \caption{Example camera configurations for 8 views around an object.}
   \label{fig:camera-setups}
 \end{figure}
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.5\textwidth, angle=180]{images/data/rendering-up.png}
+  \includegraphics[width=0.5\textwidth, angle=180]{images/data/rendering-up.jpeg}
   \caption{Camera configurations for 8 views around an object, visible from the top.}
   \label{fig:camera-setups-up}
 \end{figure}
@@ -81,17 +81,17 @@ The choice of 6, 8, or 12 views for any given model was made randomly, with the 
 \subsubsection{Lighting Strategy for Consistent Illumination}\label{sssec:lighting-strategy}
 Lighting plays a critical role in the visual appearance of rendered objects. The example rendering scripts provided by the ObjaverseXL authors \cite{objaverse} employed a randomized lighting setup. While intended to introduce variability, this approach often resulted in images with harsh lighting, strong shadows, or scenes where the object was underexposed or even completely obscured because the light source was positioned unfavorably (e.g., behind the object relative to the camera). Such inconsistencies could negatively impact model training, potentially teaching the model to generate overly dark or inconsistently lit views.
 
-To mitigate this, a revised, deterministic multi-point lighting strategy using four $SUN$ type lights was adopted. The primary goal was to achieve soft, even illumination across the object's surface, ensuring that its features were clearly visible from all rendered viewpoints.
+To mitigate this, a revised, deterministic multi-point lighting strategy using four $SUN$ type lights was adopted.The primary goal was to achieve soft, even illumination across the object's surface, ensuring that its features were clearly visible from all rendered viewpoints. This deterministic lighting strategy was specifically designed to create a dataset with consistent illumination, which helps address the 'Lighting issues' (Section \ref{sec:limitations} in Chapter \ref{chapter:proposed-method}) that can hinder the performance of multi-view generation models.
 
 The resulting images featured more consistently well-lit objects, reducing the likelihood of the diffusion model learning to arbitrarily darken parts of an object from perspectives different from the main light source direction in the input. This consistency is vital for learning accurate geometry and appearance.
 
 \subsection{Post-Rendering Quality Control and Filtering}\label{ssec:quality-control}
 Despite the controlled rendering setup, not all rendering attempts yielded high-quality images. Some 3D models were inherently problematic (e.g., incompatible formats, missing textures, non-manifold geometry), while others, due to their material properties or fine details, resulted in renders that provided little useful visual information (e.g., images consisting mainly of reflections, transparency artifacts, or indiscernible silhouettes). It was observed that approximately one-third of the initially rendered samples suffered from such quality issues.
 
-To ensure the training data was of sufficient quality, a rigorous filtering process was implemented. This was based on a contrast score, calculated as the standard deviation of pixel intensities in the grayscale version of each rendered image. A minimum contrast threshold was established. If any of the rendered views for a particular 3D model fell below this threshold, the entire sample (the 3D model and all its associated renders) was discarded from the dataset. This strict approach ensured that only models with consistently clear and informative views were retained. After this filtering stage, approximately $20,000$ high-quality 3D model samples, each with its set of 6, 8, or 12 views, remained.
+To ensure the training data was of sufficient quality, a rigorous filtering process was implemented. This was based on a contrast score, calculated as the standard deviation of pixel intensities in the grayscale version of each rendered image. A minimum contrast threshold was established. . If any of the rendered views for a particular 3D model fell below this threshold, the entire sample (the 3D model and all its associated renders) was discarded from the dataset. While this contrast metric doesn't capture all facets of 3D model quality, it proved to be a scalable and effective heuristic for discarding renders with insufficient visual information or severe artifacts. After this filtering stage, approximately $20,000$ high-quality 3D model samples, each with its set of 6, 8, or 12 views, remained.
 
 \subsection{Textual Prompt Generation via Multimodal LLM}\label{ssec:text-generation}
-To fine-tune a text-to-image diffusion model, rich textual descriptions (prompts) corresponding to the visual content are essential. Since the ObjaverseXL models do not inherently come with such descriptive prompts, they needed to be generated. For this task, a state-of-the-art multimodal Large Language Model (LLM), Qwen2.5VL \cite{qwen25vl}, was employed. Qwen2.5VL is recognized for its strong performance in image description and visual question answering tasks.
+To fine-tune a text-to-image diffusion model, rich textual descriptions (prompts) corresponding to the visual content are essential. Since the ObjaverseXL models do not inherently come with such descriptive prompts, they needed to be generated. For this task, a state-of-the-art multimodal Large Language Model (LLM), Qwen2.5VL \cite{qwen25vl}, was employed.
 
 The prompt generation process was as follows:
 \begin{enumerate}
@@ -138,7 +138,7 @@ Figure \ref{fig:dist-file-size} illustrates the distribution of file sizes (in M
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.9\textwidth]{images/data/objaverse_visualizations/distribution_file_size_bytes.png}
+  \includegraphics[width=0.9\textwidth]{images/data/objaverse_visualizations/distribution_file_size_bytes.jpeg}
   \caption{Distribution of sample sizes in the ObjaverseXL dataset. Statistics: $\mu = 37.25$ MB and $\sigma = 117.93$ MB.}
   \label{fig:dist-file-size}
 \end{figure}
@@ -147,7 +147,7 @@ The distribution of average image contrast across the rendered views is shown in
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.9\textwidth]{images/data/objaverse_visualizations/distribution_average_contrast.png}
+  \includegraphics[width=0.9\textwidth]{images/data/objaverse_visualizations/distribution_average_contrast.jpeg}
   \caption{Distribution of average contrast scores for rendered images. Statistics: $\mu = 36.97$ and $\sigma = 53.15$.}
   \label{fig:dist-avg-contrast}
 \end{figure}
@@ -156,7 +156,7 @@ Figure \ref{fig:dist-prompt-length} displays the distribution of the lengths of 
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.9\textwidth]{images/data/objaverse_visualizations/distribution_prompt_length.png}
+  \includegraphics[width=0.9\textwidth]{images/data/objaverse_visualizations/distribution_prompt_length.jpeg}
   \caption{Distribution of generated prompt lengths. Statistics: $\mu = 476.06$ and $\sigma = 170.18$.}
   \label{fig:dist-prompt-length}
 \end{figure}
@@ -165,7 +165,7 @@ A word cloud visualization of the most frequent terms appearing in the generated
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.8\textwidth]{images/data/objaverse_visualizations/wordcloud_prompts.png}
+  \includegraphics[width=0.8\textwidth]{images/data/objaverse_visualizations/wordcloud_prompts.jpeg}
   \caption{Word cloud of terms from generated prompts.}
   \label{fig:wordcloud-prompts}
 \end{figure}
@@ -204,7 +204,126 @@ Finally, Table \ref{tab:lda-topics} presents the top 20 topics identified from t
   \end{tabular}
 \end{table}
 
+The identified topics highlight a diverse range of subjects, including common objects (e.g., 'box', 'chair', 'car'), structural elements (e.g., 'roof', 'legs', 'handle'), and descriptive attributes (e.g., colors like 'blue', 'red', 'green'; materials like 'metallic', 'wooden'; and characteristics like 'smooth', 'small'). This underscores the breadth of semantic content captured in the training data prompts.
+
 These visualizations and statistics collectively provide a comprehensive overview of the dataset's characteristics, underscoring its suitability for the research presented in this thesis.
 
 \subsection{Dataset Samples}\label{ssec:dataset-samples}
 This section presents a selection of samples from the ObjaverseXL dataset. The samples are chosen to showcase the diversity of the dataset and the quality of the rendered views.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.15\textwidth]{images/data/samples/1.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/1.2.jpeg}\hfill
+  \includegraphics[width=0.15\textwidth]{images/data/samples/2.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/2.2.jpeg}\hfill
+  \includegraphics[width=0.15\textwidth]{images/data/samples/3.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/3.2.jpeg}\\\\
+  \vspace{2mm} % Vertical space between rows of pairs
+
+  \includegraphics[width=0.15\textwidth]{images/data/samples/4.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/4.2.jpeg}\hfill
+  \includegraphics[width=0.15\textwidth]{images/data/samples/5.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/5.2.jpeg}\hfill
+  \includegraphics[width=0.15\textwidth]{images/data/samples/6.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/6.2.jpeg}\\\\
+  \vspace{2mm}
+
+  \includegraphics[width=0.15\textwidth]{images/data/samples/7.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/7.2.jpeg}\hfill
+  \includegraphics[width=0.15\textwidth]{images/data/samples/8.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/8.2.jpeg}\hfill
+  \includegraphics[width=0.15\textwidth]{images/data/samples/9.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/9.2.jpeg}\\\\
+  \vspace{2mm}
+
+  \includegraphics[width=0.15\textwidth]{images/data/samples/10.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/10.2.jpeg}\hfill
+  \includegraphics[width=0.15\textwidth]{images/data/samples/11.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/11.2.jpeg}\hfill
+  \includegraphics[width=0.15\textwidth]{images/data/samples/12.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/12.2.jpeg}\\\\
+  \vspace{2mm}
+
+  \includegraphics[width=0.15\textwidth]{images/data/samples/13.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/13.2.jpeg}\hfill
+  \includegraphics[width=0.15\textwidth]{images/data/samples/14.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/14.2.jpeg}\hfill
+  \includegraphics[width=0.15\textwidth]{images/data/samples/15.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/15.2.jpeg}\\\\
+  \vspace{2mm}
+
+  \includegraphics[width=0.15\textwidth]{images/data/samples/16.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/16.2.jpeg}\hfill
+  \includegraphics[width=0.15\textwidth]{images/data/samples/25.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/25.2.jpeg}\hfill
+  \includegraphics[width=0.15\textwidth]{images/data/samples/18.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/18.2.jpeg} \\\\
+  \vspace{2mm}
+
+  \includegraphics[width=0.15\textwidth]{images/data/samples/19.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/19.2.jpeg}\hfill
+  \includegraphics[width=0.15\textwidth]{images/data/samples/20.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/20.2.jpeg}\hfill
+  \includegraphics[width=0.15\textwidth]{images/data/samples/21.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/21.2.jpeg} \\\\
+  \vspace{2mm}
+
+  \includegraphics[width=0.15\textwidth]{images/data/samples/22.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/22.2.jpeg}\hfill
+  \includegraphics[width=0.15\textwidth]{images/data/samples/23.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/23.2.jpeg}\hfill
+  \includegraphics[width=0.15\textwidth]{images/data/samples/24.1.jpeg}\hspace{0.01\textwidth}%
+  \includegraphics[width=0.15\textwidth]{images/data/samples/24.2.jpeg}
+
+  \caption{Sample image pairs from the ObjaverseXL dataset.}
+  \label{fig:dataset-sample-pairs-1}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.15\textwidth]{images/data/samples/obj1/000.jpeg}\hfill
+  \includegraphics[width=0.15\textwidth]{images/data/samples/obj1/001.jpeg}\hfill
+  \includegraphics[width=0.15\textwidth]{images/data/samples/obj1/002.jpeg}\hfill
+  \includegraphics[width=0.15\textwidth]{images/data/samples/obj1/003.jpeg}\hfill
+  \includegraphics[width=0.15\textwidth]{images/data/samples/obj1/004.jpeg}\hfill
+  \includegraphics[width=0.15\textwidth]{images/data/samples/obj1/005.jpeg}
+
+  \caption{Sample views of Object 1 (6 views). Generated prompt: Create an image of a miniature lighthouse with a rustic vintage design. The base is made of dark wood with a polished finish, supporting a cylindrical tower made from a lighter material. The upper part features a lantern-like structure painted in a light color, adorned with small decorative elements like round windows or panels. The top is capped with a small, pointed roof made from the same light-colored material, slightly tilted.}
+  \label{fig:dataset-sample-obj1}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.22\textwidth]{images/data/samples/obj2/000.jpeg}\hfill
+  \includegraphics[width=0.22\textwidth]{images/data/samples/obj2/001.jpeg}\hfill
+  \includegraphics[width=0.22\textwidth]{images/data/samples/obj2/002.jpeg}\hfill
+  \includegraphics[width=0.22\textwidth]{images/data/samples/obj2/003.jpeg}\\
+  \includegraphics[width=0.22\textwidth]{images/data/samples/obj2/004.jpeg}\hfill
+  \includegraphics[width=0.22\textwidth]{images/data/samples/obj2/005.jpeg}\hfill
+  \includegraphics[width=0.22\textwidth]{images/data/samples/obj2/006.jpeg}\hfill
+  \includegraphics[width=0.22\textwidth]{images/data/samples/obj2/007.jpeg}
+  \caption{Sample views of Object 2 (8 views). Generated prompt: Create a detailed 3D model of a rustic cabin with a rectangular shape and slightly rounded corners. The cabin should have a warm, golden hue roof covered with shingles, wooden walls painted in a light color, small rectangular windows and door, and a raised foundation on stilts. The base should be a flat, green surface representing grass or another natural material. The overall aesthetic should be charming and rustic, with attention to detail in the textures and colors of the materials used.}
+  \label{fig:dataset-sample-obj2}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  % Row 1
+  \includegraphics[width=0.22\textwidth]{images/data/samples/obj3/000.jpeg}\hfill
+  \includegraphics[width=0.22\textwidth]{images/data/samples/obj3/001.jpeg}\hfill
+  \includegraphics[width=0.22\textwidth]{images/data/samples/obj3/002.jpeg}\hfill
+  \includegraphics[width=0.22\textwidth]{images/data/samples/obj3/003.jpeg}\\
+  % Row 2
+  \includegraphics[width=0.22\textwidth]{images/data/samples/obj3/004.jpeg}\hfill
+  \includegraphics[width=0.22\textwidth]{images/data/samples/obj3/005.jpeg}\hfill
+  \includegraphics[width=0.22\textwidth]{images/data/samples/obj3/006.jpeg}\hfill
+  \includegraphics[width=0.22\textwidth]{images/data/samples/obj3/007.jpeg}\\
+  % Row 3
+  \includegraphics[width=0.22\textwidth]{images/data/samples/obj3/008.jpeg}\hfill
+  \includegraphics[width=0.22\textwidth]{images/data/samples/obj3/009.jpeg}\hfill
+  \includegraphics[width=0.22\textwidth]{images/data/samples/obj3/010.jpeg}\hfill
+  \includegraphics[width=0.22\textwidth]{images/data/samples/obj3/011.jpeg}
+  \caption{Sample views of Object 3 (12 views). Generated prompt: Create an image of a gas cooktop with an integrated oven. The design is sleek and contemporary. The cooktop section is made from a light-colored material, likely stainless steel, which reflects light and gives it a polished appearance. The hood extends outward, suggesting it is designed to cover the entire cooktop area. The edges of the hood are rounded, adding to the modern aesthetic. The color scheme is primarily metallic silver and black, with the black elements providing contrast against the silver surfaces.}
+  \label{fig:dataset-sample-obj3}
+\end{figure}

@@ -17,7 +17,7 @@ Despite the significant progress in multi-view image generation and novel view s
 
   \item \textbf{Geometric Consistency}: Maintaining geometric consistency across generated views remains a challenge, particularly when generating views from significantly different perspectives. Current methods often struggle with complex occlusions, reflective surfaces and fine geometric details.
 
-  \item \textbf{Lighting issues}:
+  \item \textbf{Lighting issues}: The lighting plays a critical role in the visual appearance of rendered objects. The example rendering scripts provided by the ObjaverseXL authors \cite{objaverse} employed a randomized lighting setup. While intended to introduce variability, this approach often resulted in images with harsh lighting, strong shadows, or scenes where the object was underexposed or even completely obscured because the light source was positioned unfavorably. This can negatively impact the 3D reconstruction from images since the Novel View Synthesis should provide meaningful information about texture and geometry.
 
   \item \textbf{Adaptation to unseen objects}: The current methods are not able to generalize to unseen objects, which is a major limitation.
 

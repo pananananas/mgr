@@ -316,18 +316,14 @@ right=25mm]{geometry}
 % ***************************************************************************************************
 
 % Umożliwia wstawianie hiperłączy do dokumentu
-\usepackage{hyperref}              % Aktywuje linki
-
-\hypersetup{
-  colorlinks  =  true,          % Koloruje tekst zamiast tworzyć ramki.
-  linkcolor  =  blue,          % Kolory: referencji,
-  citecolor  =  red,          % cytowań,
-  urlcolor  =  blue          % hiperlinków.
-}
-
-% Do stworzenia hiperłączy zostanie użyta ta sama (same) czcionka co
-% dla reszty dokumentu
-\urlstyle{same}
+% \usepackage{hyperref}              % MOVED
+% \hypersetup{
+%   colorlinks  =  true,
+%   linkcolor  =  blue,
+%   citecolor  =  red,
+%   urlcolor  =  blue
+% }
+% \urlstyle{same}
 
 % ***************************************************************************************************
 % Linki
@@ -364,7 +360,7 @@ leftmargin  =  8mm}
 
 % Figury i przypisy
 \usepackage{caption}
-%\usepackage{subcaption}
+\usepackage{subcaption}
 
 % Umożliwia tworzenie przypisów wewnątrz środowisk
 \usepackage{footnote}
@@ -445,7 +441,7 @@ leftmargin  =  8mm}
 \usepackage{array}
 \usepackage{tabularx}
 \usepackage{hhline}
-\usepackage{minted}
+% \usepackage{minted}
 \usepackage{url}
 \usepackage{microtype}
 \usepackage{booktabs}
@@ -457,7 +453,6 @@ leftmargin  =  8mm}
 \usepackage{colortbl}
 \usepackage{adjustbox}
 \usepackage{color,soul}
-\usepackage{subfigure}
 \usepackage{pdfpages}
 
 \let\origdoublepage\cleardoublepage
@@ -469,6 +464,8 @@ leftmargin  =  8mm}
 \newcommand{\xmark}{\ding{55}}
 \newcommand{\bftab}{\fontseries{b}\selectfont}
 
+\usepackage[nocompress]{cite}
+
 \newcolumntype{P}[1]{>{\raggedright\arraybackslash\noindent}p{#1}}
 
 \newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
@@ -476,7 +473,6 @@ leftmargin  =  8mm}
 \newcolumntype{C}[1]{>{\centering\arraybackslash}m{#1}}
 
 \usepackage{caption}
-\usepackage[nocompress]{cite}
 \usepackage{url}
 \usepackage{color,soul}
 \usepackage[inkscapelatex=false]{svg}
@@ -484,6 +480,15 @@ leftmargin  =  8mm}
 \usepackage{wrapfig}
 
 % formatowanie pierwszych stron rozdziałów - pomagające
+\usepackage{hyperref}              % MOVED HERE
+\hypersetup{
+  colorlinks  =  true,
+  linkcolor  =  blue,
+  citecolor  =  red,
+  urlcolor  =  blue
+}
+\urlstyle{same}
+
 \newcommand{\resetformatting}{
   \fancypagestyle{plain}{
     \fancyhf{}%
