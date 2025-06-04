@@ -198,7 +198,6 @@ All four model variants, differing only in their $CameraEncoder$ configuration a
 \textbf{Results and Discussion}:
 The results are shown in Figure \ref{fig:exp_camera_encoder_depth_metrics_grid}. The deeper $CameraEncoder$ is able to achieve a slightly better performance on the FID metric, but the standard $CameraEncoder$ is able to achieve a comparable performance.
 
-
 \subsection{E4: Impact of Training Data Scale}\label{ssec:exp_data_scale}
 \textbf{Objective}: To investigate how the size of the training dataset (number of unique 3D objects from ObjaverseXL) influences the model\'s performance, particularly its generalization ability to unseen objects (GSO dataset) and overall robustness. This is especially relevant for addressing the "Adaptation to unseen objects" limitation of current state-of-the-art methods.
 
@@ -211,7 +210,7 @@ The proposed model, using the adapter-only training approach and consistent cond
 \end{itemize}
 All models were trained for a comparable number of effective updates relative to their dataset size where possible (e.g., by adjusting epoch counts or comparing at similar total iterations/epochs across all scales). Performance was evaluated on the GSO test set using all key metrics.
 
-\textbf{Results and Discussion}: The results are shown in Figure \ref{fig:exp_data_scale_metrics_grid}. 
+\textbf{Results and Discussion}: The results are shown in Figure \ref{fig:exp_data_scale_metrics_grid}.
 
 \section{Comparison with State-of-the-Art Methods on GSO Dataset}\label{sec:exp_gso_quantitative_sota}
 
@@ -225,16 +224,16 @@ The performance of the proposed method is compared against two contemporary nove
 
 \begin{table}[htbp]
   \centering
-  \caption{Quantitative comparison with state-of-the-art methods on 100 samples from the GSO dataset. PSNR ($\uparrow$), SSIM ($\uparrow$), LPIPS ($\downarrow$).}
+  \caption{Quantitative comparison with state-of-the-art methods on 100 samples from the GSO dataset.}
   \label{tab:sota_comparison_gso}
   \begin{tabular}{lccc}
     \toprule
-    \textbf{Method} & \textbf{PSNR} & \textbf{SSIM} & \textbf{LPIPS} \\
+    \textbf{Method} & \textbf{PSNR} $\uparrow$ & \textbf{SSIM} $\uparrow$ & \textbf{LPIPS} $\downarrow$ \\
     \midrule
-    Zero123++ \cite{zero123} & 19.27 & 0.84 & 0.12 \\
+    Zero123++ \cite{zero1to3} & 19.27 & 0.84 & 0.12 \\
     MVAdapter \cite{mvadapter} & 11.48 & 0.78 & 0.16 \\
     Proposed Method (1k samples, 25 epochs) & 13.12 & 0.81 & 0.20 \\
-    Proposed Method (20k samples, 10 epochs, adapters) & [PSNR] & [SSIM] & [LPIPS] \\ % User to fill this for their best model
+    Proposed Method (20k samples, 10 epochs) & [PSNR] & [SSIM] & [LPIPS] \\ % User to fill this for their best model
     \bottomrule
   \end{tabular}
 \end{table}
@@ -253,7 +252,22 @@ The average inference time was measured for generating a single novel view at th
 
 The results will be compared to the inference time of other state-of-the-art methods Zero123++ \cite{zero1to3} and MVAdapter \cite{mvadapter} (with their default settings).
 
-\textbf{Results and Discussion}: The proposed adapter-based model achieves an average inference time of 100 ms per $768 \times 768$ image on an NVIDIA A100 GPU, using 20 denoising steps. This suggests that the proposed model is able to generate novel views in real-time, which is a significant improvement over the state-of-the-art methods.
+\begin{table}[htbp]
+  \centering
+  \caption{Inference time comparison with state-of-the-art methods.}
+  \label{tab:inference_time_comparison}
+  \begin{tabular}{lccc}
+    \toprule
+    \textbf{Method} & \textbf{Inference Time (seconds)} $\downarrow$ \\
+    \midrule
+    Zero123++ \cite{zero1to3} & 6.51 \\
+    MVAdapter \cite{mvadapter} & 19.42 \\
+    Proposed Method & 16.04 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{Results and Discussion}: The proposed adapter-based model achieves an average inference time of 16.04 seconds per $768 \times 768$ image on an NVIDIA A100 GPU, using 20 denoising steps. This suggests that the proposed model is able to generate novel views in comparable time to the MVAdapter method. The Zero123++ method is still significantly faster, with an average inference time of 6.51 seconds.
 
 \section{Chapter Summary}\label{sec:exp_summary}
 This chapter detailed the comprehensive experimental evaluation of the proposed multi-view novel view synthesis method. The experimental setup, including datasets (ObjaverseXL for training, GSO for testing) and evaluation metrics (PSNR, SSIM, LPIPS, FID, CLIP score), was established.
@@ -266,6 +280,6 @@ Key findings from the experiments include:
   \item \textbf{Impact of Data Scale}: Increasing the training data size (Section \ref{ssec:exp_data_scale}) generally led to improved performance and generalization on the GSO dataset, underscoring the importance of large-scale diverse data for training robust NVS models.
 \end{itemize}
 
-Quantitative evaluation on the GSO dataset (Section \ref{sec:exp_gso_quantitative_sota}) positioned the proposed method relative to SOTA approaches like Zero123++ and MVAdapter, showing that the proposed method is able to achieve a comparable performance to the state-of-the-art methods. 
+Quantitative evaluation on the GSO dataset (Section \ref{sec:exp_gso_quantitative_sota}) positioned the proposed method relative to SOTA approaches like Zero123++ and MVAdapter, showing that the proposed method is able to achieve a comparable performance to the state-of-the-art methods.
 
 Overall, the experiments validate the architectural design choices and training strategies employed in this thesis, demonstrating a capable and efficient approach to diffusion-based novel view synthesis. Identified limitations and observations from these experiments also pave the way for potential future work, such as further exploration of more sophisticated camera encoders, or training on even larger and more diverse datasets to push generalization boundaries.
