@@ -82,8 +82,8 @@ Figure \ref{fig:exp_cond_metrics_grid} shows the effect of conditioning strength
   \centering
   \begin{subfigure}[b]{0.48\textwidth}
     \centering
-    \includegraphics[width=\textwidth]{images/experiments/cam_img/perceptual.png}
-    \label{fig:exp_cond_perceptual}
+    \includegraphics[width=\textwidth]{images/experiments/cam_img/clip_score.png}
+    \label{fig:exp_cond_clip}
   \end{subfigure}
   \hfill
   \begin{subfigure}[b]{0.48\textwidth}
@@ -91,11 +91,11 @@ Figure \ref{fig:exp_cond_metrics_grid} shows the effect of conditioning strength
     \includegraphics[width=\textwidth]{images/experiments/cam_img/ssim.png}
     \label{fig:exp_cond_ssim}
   \end{subfigure}
-
+  
   \begin{subfigure}[b]{0.48\textwidth}
     \centering
-    \includegraphics[width=\textwidth]{images/experiments/cam_img/clip_score.png}
-    \label{fig:exp_cond_clip}
+    \includegraphics[width=\textwidth]{images/experiments/cam_img/perceptual.png}
+    \label{fig:exp_cond_perceptual}
   \end{subfigure}
   \hfill
   \begin{subfigure}[b]{0.48\textwidth}
@@ -104,7 +104,7 @@ Figure \ref{fig:exp_cond_metrics_grid} shows the effect of conditioning strength
     \label{fig:exp_cond_train_loss}
   \end{subfigure}
 
-  \caption{E1: Impact of conditioning strengths on various metrics: (a) Perceptual Loss, (b) SSIM, (c) CLIP Score, (d) FID Score.}
+  \caption{E1: Impact of conditioning strengths on various metrics: (a) CLIP Score, (b) SSIM, (c) Perceptual Loss, (d) FID Score.}
   \label{fig:exp_cond_metrics_grid}
 \end{figure}
 
@@ -130,9 +130,9 @@ In the future experiments, the parameters were set to $img\_ref\_scale=0.75$ and
 To compare the performance, training efficiency (time and computational resources), and parameter efficiency of the proposed adapter-based training approach against full fine-tuning of the U-Net. This addresses the "Training adapter only vs full fine-tuning" point.
 
 \textbf{Methodology}:
-Two main training strategies were compared. The first approach involved training only the lightweight adapter modules and camera conditioning encoder (adapter only training), keeping the backbone Stable Diffusion U-Net frozen. For a direct comparison on a smaller scale, this was performed on a 1,000-sample subset of ObjaverseXL for 10 epochs.
+Two main training strategies were compared. The first approach involved training only the lightweight adapter modules and camera conditioning encoder (adapter only training), keeping the backbone Stable Diffusion U-Net frozen. For a direct comparison on a smaller scale, this was performed on a 5,000-sample subset of ObjaverseXL for 10 epochs.
 
-The second approach involved fine-tuning the entire U-Net along with the adapters and conditioning encoders (full U-Net fine-tuning). This was performed on a 1,000-sample subset of ObjaverseXL for 10 epochs for comparison with the adapter-only training on the same dataset size.
+The second approach involved fine-tuning the entire U-Net along with the adapters and conditioning encoders (full U-Net fine-tuning). This was performed on a 5,000-sample subset of ObjaverseXL for 10 epochs for comparison with the adapter-only training on the same dataset size.
 
 \begin{figure}[htbp]
   \centering
@@ -144,9 +144,9 @@ The second approach involved fine-tuning the entire U-Net along with the adapter
 \begin{figure}[htbp]
   \centering
   \begin{subfigure}[b]{0.48\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{images/experiments/adapter_vs_full/perceptual.png}
-    \label{fig:exp_adap_vs_full_perceptual}
+  \centering
+    \includegraphics[width=\textwidth]{images/experiments/adapter_vs_full/clip_score.png}
+    \label{fig:exp_adap_vs_full_clip}
   \end{subfigure}
   \hfill
   \begin{subfigure}[b]{0.48\textwidth}
@@ -154,11 +154,11 @@ The second approach involved fine-tuning the entire U-Net along with the adapter
     \includegraphics[width=\textwidth]{images/experiments/adapter_vs_full/ssim.png}
     \label{fig:exp_adap_vs_full_ssim}
   \end{subfigure}
-
+  
   \begin{subfigure}[b]{0.48\textwidth}
     \centering
-    \includegraphics[width=\textwidth]{images/experiments/adapter_vs_full/clip_score.png}
-    \label{fig:exp_adap_vs_full_clip}
+    \includegraphics[width=\textwidth]{images/experiments/adapter_vs_full/perceptual.png}
+    \label{fig:exp_adap_vs_full_perceptual}
   \end{subfigure}
   \hfill
   \begin{subfigure}[b]{0.48\textwidth}
@@ -167,7 +167,7 @@ The second approach involved fine-tuning the entire U-Net along with the adapter
     \label{fig:exp_adap_vs_full_train_loss}
   \end{subfigure}
 
-  \caption{E2: Training adapters only vs. full fine-tuning of U-Net on various metrics: (a) Perceptual Loss, (b) SSIM, (c) CLIP Score, (d) FID Score.}
+  \caption{E2: Training adapters only vs. full fine-tuning of U-Net on various metrics: (a) CLIP Score, (b) SSIM, (c) Perceptual Loss, (d) FID Score.}
   \label{fig:exp_adap_vs_full_metrics_grid}
 \end{figure}
 
@@ -193,10 +193,57 @@ Four configurations of the $CameraEncoder$ were evaluated, varying MLP depth and
   \item \textbf{Deeper MLPs, Lower Dimensionality}: Rotation and translation encoder MLPs each consist of three linear transformation stages. The internal hidden dimension is 512, and the final camera embedding dimension is 1024.
   \item \textbf{Deeper MLPs, Higher Dimensionality}: Rotation and translation encoder MLPs each consist of three linear transformation stages. The internal hidden dimension is 1024, and the final camera embedding dimension is 2048.
 \end{itemize}
-All four model variants, differing only in their $CameraEncoder$ configuration as described, were trained using the adapter-only approach on a 1,000-sample subset of the ObjaverseXL dataset for 10 epochs.
+All four model variants, differing only in their $CameraEncoder$ configuration as described, were trained using the adapter-only approach on a 5,000-sample subset of the ObjaverseXL dataset for 10 epochs.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.75\textwidth]{images/experiments/cam_depth/train.png}
+  \caption{E3: Training MSE noise loss.}
+  \label{fig:exp_cam_depth_train_loss}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/experiments/cam_depth/clip.png}
+    \label{fig:exp_cam_depth_clip}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/experiments/cam_depth/ssim.png}
+    \label{fig:exp_cam_depth_ssim}
+  \end{subfigure}
+  
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/experiments/cam_depth/perceptual.png}
+    \label{fig:exp_cam_depth_perceptual}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{images/experiments/cam_depth/fid.png}
+    \label{fig:exp_cam_depth_train_loss}
+  \end{subfigure}
+
+  \caption{E3: Impact of camera encoder depth on various metrics: (a) CLIP Score, (b) SSIM, (c) Perceptual Loss, (d) FID Score.}
+  \label{fig:exp_cam_depth_metrics_grid}
+\end{figure}
 
 \textbf{Results and Discussion}:
-The results are shown in Figure \ref{fig:exp_camera_encoder_depth_metrics_grid}. The deeper $CameraEncoder$ is able to achieve a slightly better performance on the FID metric, but the standard $CameraEncoder$ is able to achieve a comparable performance.
+The quantitative results demonstrate consistent performance across all four $/text{CameraEncoder}$ architectural variants, as shown in Figure \ref{fig:exp_cam_depth_metrics_grid}. All configurations converge to similar final values: CLIP scores of $\approx 0.78-0.79$, SSIM values of $\approx 0.92-0.93$, FID scores of $\approx 103-106$, and perceptual loss of $\approx 3.6-3.7$. This consistency suggests that architectural complexity has minimal impact on camera parameter encoding effectiveness.
+
+Detailed analysis reveals:
+\begin{itemize}
+  \item \textbf{MLP Depth}: Deeper 3-layer configurations (3L-512, 3L-1024) show no substantial advantages over 2-layer counterparts (2L-512, 2L-1024). Performance differences remain within typical training variance, indicating that additional depth does not enhance camera transformation encoding.
+  \item \textbf{Embedding Dimensionality}: Increasing hidden dimensions from 512 to 1024 and final embeddings from 1024 to 2048 produces negligible performance improvements. Lower-dimensional representations appear sufficient for capturing necessary geometric relationships.
+  \item \textbf{Training Dynamics}: All variants exhibit similar convergence patterns and stable validation metrics, demonstrating that FiLM-based conditioning is robust to moderate architectural variations.
+  \item \textbf{Marginal Differences}: 3L-512 achieves slightly better FID performance.
+\end{itemize}
+
+These findings indicate that the camera encoding bottleneck lies in the fundamental challenge of mapping geometric transformations to effective feature modulations, rather than architectural complexity. The baseline 2L-512 configuration provides optimal efficiency while maintaining competitive performance, validating its use in subsequent experiments.
 
 \subsection{E4: Impact of Training Data Scale}\label{ssec:exp_data_scale}
 \textbf{Objective}: To investigate how the size of the training dataset (number of unique 3D objects from ObjaverseXL) influences the model\'s performance, particularly its generalization ability to unseen objects (GSO dataset) and overall robustness. This is especially relevant for addressing the "Adaptation to unseen objects" limitation of current state-of-the-art methods.
