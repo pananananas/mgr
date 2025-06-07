@@ -23,6 +23,42 @@ Despite the significant progress in diffusion-based novel view synthesis, severa
 
 \textbf{My Contributions}: This work addresses these limitations through: (1) a balanced adapter architecture that maintains expressiveness while ensuring training efficiency, (2) a FiLM-based camera conditioning mechanism that enables direct geometric control through learnable camera parameter encoding, (3) a hybrid conditioning strategy combining parallel image cross-attention with network modulation, (4) carefully curated training data with consistent lighting conditions, (5) training on diverse viewpoint configurations as well as (6) diverse object categories to maximize generalization capabilities.
 
+\section{Theoretical Justification}\label{sec:theoretical-justification}
+
+The core innovation of this work lies in the application of Feature-wise Linear Modulation (FiLM) for camera parameter conditioning in diffusion models. This section provides theoretical justification for why this approach is fundamentally well-suited for novel view synthesis.
+
+\subsection{Geometric Transformations and Feature Space Modulation}
+
+Camera transformations between viewpoints can be decomposed into rotation matrix $\mathbf{R} \in SO(3)$ and translation vector $\mathbf{t} \in \mathbb{R}^3$, which define how 3D points transform between coordinate systems. In the context of novel view synthesis, we seek to transform feature representations from a source viewpoint to a target viewpoint.
+
+The key insight is that FiLM's affine transformation $\gamma \odot \mathbf{h} + \beta$ provides a learnable approximation of geometric transformations in feature space. Specifically:
+
+\begin{itemize}
+  \item \textbf{Scaling component} ($\gamma$): Can model perspective changes, depth-dependent scaling, and orientation-dependent feature emphasis that arise from rotational transformations
+  \item \textbf{Shift component} ($\beta$): Can model translational offsets and view-dependent bias adjustments needed to account for position changes
+\end{itemize}
+
+\subsection{Cross-Modal Conditioning}
+
+FiLM has been proven effective for cross-modal conditioning, where information from one modality (e.g., text) influences processing in another modality (e.g., images) \cite{film, filmedunet}. Our application extends this framework by treating camera parameters as a distinct geometric modality.
+
+The theoretical foundation rests on FiLM's ability to perform \textit{conditional computation} - the same feature map $\mathbf{h}$ can be processed differently based on the conditioning signal. For camera conditioning:
+
+\[ \text{FiLM}(\mathbf{h}|\mathbf{R}, \mathbf{t}) = \gamma(\mathbf{R}, \mathbf{t}) \odot \mathbf{h} + \beta(\mathbf{R}, \mathbf{t}) \]
+
+where $\gamma$ and $\beta$ are learned functions of the camera parameters. This formulation allows the network to dynamically adjust its feature processing based on the target viewpoint, effectively implementing view-dependent feature transformations.
+
+\subsection{Hybrid Conditioning Strategy}
+
+The combination of FiLM-based camera conditioning with parallel image cross-attention is motivated by the complementary nature of these mechanisms:
+
+\begin{itemize}
+  \item \textbf{FiLM conditioning}: Provides global, view-dependent modulation that affects how features are processed throughout the network
+  \item \textbf{Image cross-attention}: Enables selective attention to relevant visual details from the reference image
+\end{itemize}
+
+This hybrid approach allows the model to both globally adapt its processing for the target viewpoint (via FiLM) and selectively transfer appropriate visual content (via attention), addressing the fundamental challenge of novel view synthesis: maintaining visual consistency while adapting to geometric changes.
+
 \section{Method Overview}\label{sec:overview}
 
 \subsection{Method Summary}
@@ -56,7 +92,7 @@ The foundation of the proposed method is the Stable Diffusion 2.1 model. I chose
 In my method I keep several key components of the original model frozen to preserve their learned knowledge and ensure computational efficiency during training. These include the Variational Autoencoder (VAE) \cite{vae} used for encoding images into and decoding latents from the latent space, the text encoder CLIP \cite{clip} responsible for processing textual prompts, and the weights of the original U-Net when used within the Reference Image Encoder. I specifically designed the new conditioning modules and adapters to be trainable while maintaining the frozen backbone.
 
 \subsection{Reference Image Conditioning Stream}
-To enable the model to generate views that are visually consistent with a given input, a reference image conditioning stream is introduced. This stream aims to capture and transfer the appearance, texture, color, and identity of the object depicted in the source image to the novel view generation process.
+To enable the model to generate views that are visually consistent with a given input, a reference image conditioning stream is introduced. This approach is inspired by recent advances in image-conditioned generation, particularly the feature extraction strategies employed in CatVTON \cite{catvton} for garment transfer and the multi-view attention mechanisms developed in MV-Adapter \cite{mvadapter}. This stream aims to capture and transfer the appearance, texture, color, and identity of the object depicted in the source image to the novel view generation process.
 
 \subsubsection{Source Image Feature Extraction}
 The process of extracting visual features from the source image through a dedicated $\text{ImageEncoder}$ module leverages a frozen copy of the Stable Diffusion 2.1 U-Net to extract multi-scale attention features.
@@ -66,12 +102,12 @@ The process of extracting visual features from the source image through a dedica
 \subsubsection{Image Cross-Attention Adapters}
 The visual features extracted by the $\text{ImageEncoder}$ are injected into the main denoising U-Net using newly introduced, trainable adapter modules that serve as cross-attention layers. These processors are designed to be lightweight and integrated into each corresponding block of the denoising U-Net.
 
-\textbf{Parallel Architecture Design}: A key architectural choice is the parallel integration of these image cross-attention adapters. Instead of serially passing information through the original attention layers and then the new adapters, the adapters operate in parallel to the U-Net's existing self-attention and text-cross-attention mechanisms. This design choice preserves the original feature space while enabling efficient learning of image-conditioned representations.
+\textbf{Parallel Architecture Design}: A key architectural choice is the parallel integration of these image cross-attention adapters, inspired by the adapter design philosophy of MV-Adapter \cite{mvadapter}. Instead of serially passing information through the original attention layers and then the new adapters, the adapters operate in parallel to the U-Net's existing self-attention and text-cross-attention mechanisms. This design choice preserves the original feature space while enabling efficient learning of image-conditioned representations, similar to the approach used in IP-Adapter \cite{ipadapter} for image prompt conditioning.
 
 \textbf{Attention Mechanism}: The extracted image features serve as the key ($\mathbf{K}_{img}$) and value ($\mathbf{V}_{img}$) for these new cross-attention layers, while the U-Net's intermediate hidden states act as the query ($\mathbf{Q}$). The cross-attention operation is computed using scaled dot-product attention:
 \[ \text{Attention}(\mathbf{Q}, \mathbf{K}_{img}, \mathbf{V}_{img}) = \text{softmax}\left(\frac{\mathbf{Q}\mathbf{K}_{img}^T}{\sqrt{d_k}}\right)\mathbf{V}_{img} \]
 
-The output is scaled by a hiperparameter - reference scale factor and added to the original attention output:
+The output is scaled by a hyperparameter - reference scale factor and added to the original attention output:
 \[ \mathbf{h}_{out} = \mathbf{h}_{original} + \text{ref\_scale\_val} \cdot \text{Attention}(\mathbf{Q}, \mathbf{K}_{img}, \mathbf{V}_{img}) \]
 
 \textbf{Efficiency Considerations}: The adapter-based approach trains only 585M parameters out of the total 2.9B parameters of the complete model (including U-Net, VAE, text encoder, and adapters), ensuring computational efficiency while maintaining expressive power.
@@ -82,7 +118,7 @@ To ensure geometric consistency and enable precise control over the viewpoint of
 \subsubsection{Camera Pose Encoding}
 The $\text{CameraEncoder}$ module processes geometric information by computing and encoding the relative transformation between source and target camera poses.
 
-\textbf{Relative Transformation Computation}: Given source camera pose $\mathbf{C}_s$ and target camera pose $\mathbf{C}_t$ (both $4 \times 4$ homogeneous transformation matrices), the method first extracts rotation matrices $\mathbf{R}_s, \mathbf{R}_t \in \mathbb{R}^{3 \times 3}$ and translation vectors $\mathbf{t}_s, \mathbf{t}_t \in \mathbb{R}^3$. The relative transformation is computed as:
+\textbf{Relative Transformation Computation}: Following the relative pose encoding strategy established in Zero-1-to-3 \cite{zero1to3}, given source camera pose $\mathbf{C}_s$ and target camera pose $\mathbf{C}_t$ (both $4 \times 4$ homogeneous transformation matrices), the method first extracts rotation matrices $\mathbf{R}_s, \mathbf{R}_t \in \mathbb{R}^{3 \times 3}$ and translation vectors $\mathbf{t}_s, \mathbf{t}_t \in \mathbb{R}^3$. The relative transformation is computed as:
 \[ \mathbf{R}_{rel} = \mathbf{R}_t \mathbf{R}_s^T \]
 \[ \mathbf{t}_{rel} = \mathbf{t}_t - \mathbf{R}_{rel} \mathbf{t}_s \]
 
@@ -91,7 +127,7 @@ The $\text{CameraEncoder}$ module processes geometric information by computing a
 Rotation Encoding: The $3 \times 3$ rotation matrix are flattened to a 9-dimensional vector and processed through a dedicated MLP:
 \[ \mathbf{E}_{rot} = \text{MLP}_{rot}(\text{flatten}(\mathbf{R}_{rel})) \]
 
-Translation Encoding: The translation vector $\mathbf{t}_{rel}$ is first positionally encoded to enrich its geometric representation:
+Translation Encoding: The translation vector $\mathbf{t}_{rel}$ is first positionally encoded to enrich its geometric representation, adapting the positional encoding technique from transformer architectures \cite{attention_is_all_you_need}:
 \[ \text{PE}(\mathbf{t}_{rel}) = [\sin(\omega_k \cdot \mathbf{t}_{rel}), \cos(\omega_k \cdot \mathbf{t}_{rel})]_{k=1}^{K} \]
 where $\omega_k = \exp(\frac{k \log(\omega_{max})}{K})$ are logarithmically spaced frequencies. The positionally encoded translation is then processed through its own MLP:
 \[ \mathbf{E}_{trans} = \text{MLP}_{trans}(\text{PE}(\mathbf{t}_{rel})) \]
@@ -103,7 +139,7 @@ where $\mathbf{E}_{cam} \in \mathbb{R}^{d_{cam}}$ represents the final camera em
 The MLP details are provided in the next chapter (Chapter \ref{chapter:experiments}).
 
 \subsubsection{FiLM-based Network Modulation}
-The high-dimensional camera embedding produced by the $\text{CameraEncoder}$ is used to modulate the activations within the main denoising U-Net via Feature-wise Linear Modulation (FiLM) layers \cite{film}. As detailed in Chapter \ref{chapter:related}, FiLM provides an effective mechanism for conditioning neural network activations. This conditioning mechanism allows camera pose information to dynamically influence feature representations throughout the network.
+The high-dimensional camera embedding produced by the $\text{CameraEncoder}$ is used to modulate the activations within the main denoising U-Net via Feature-wise Linear Modulation (FiLM) layers \cite{film}. This approach is motivated by the success of FiLM in cross-modal conditioning tasks, particularly its application in FiLMed-UNet \cite{filmedunet} for medical image segmentation with metadata conditioning. As detailed in Chapter \ref{chapter:related}, FiLM provides an effective mechanism for conditioning neural network activations. Our novel contribution lies in applying this mechanism specifically to camera parameter conditioning in diffusion models, enabling camera pose information to dynamically influence feature representations throughout the network.
 
 \textbf{Modulator Architecture}: For each U-Net block that requires camera conditioning, the method employs dedicated modulator networks that generate scale and shift parameters from the camera embedding:
 \[ [\boldsymbol{\gamma}; \boldsymbol{\beta}] = \text{MLP}_{mod}(\mathbf{E}_{cam}) \]
