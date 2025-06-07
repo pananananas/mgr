@@ -1,17 +1,36 @@
-\Chapter{Introduction TODO}\label{chapter:introduction}
-W pracy formułuje się cele o charakterze badawczym wymagające doboru
-i zastosowania metod badawczych, wykorzystując wiedzę teoretyczną
-oraz naukową. Wskazane jest przedstawienie, co nowego jest
-zaproponowane w pracy oraz podanie ograniczeń i słabych/mocnych stron
-opracowanego rozwiązania (jeżeli dotyczy). Rozdział wprowadzający
-powinien służyć czytelnikowi do zrozumienia celu pracy.
+\Chapter{Introduction}\label{chapter:introduction}
 
-\section{Problem Statement}
-W tej sekcji student powinien przedstawić bliżej problem, którym chce
-się zmierzyć. Jasno zdefiniuj problem badawczy. Podaj swoje cele,
-zadania i pytania badawcze. Wyjaśnij znaczenie badania. Określ
-ograniczenia badań.
+\section{Motivation}
 
-\section{Thesis Objectives}
-W tej sekcji powinny zostać przedstawione konkretne działania, które
-określają pracę studenta w celu rozwiązania problemu.
+Novel view synthesis from single images remains one of computer vision's most challenging problems. While diffusion models have revolutionized 2D image generation, adapting them for 3D-aware synthesis poses fundamental challenges: how to effectively encode geometric transformations without disrupting pre-trained knowledge, and how to balance computational efficiency with model expressiveness.
+
+Current approaches suffer from critical limitations. Methods like Zero-1-to-3 \cite{zero1to3} use simple pose vectors that provide insufficient geometric detail for complex viewpoint changes. Advanced techniques like CAT3D \cite{cat3d} and MV-Adapter \cite{mvadapter} rely on complex raymap representations that are likely to introduce visual artifacts and struggle with reflective materials. Meanwhile, most of the existing methods require full fine-tuning large diffusion models which is computationally prohibitive.
+
+This work addresses a fundamental question: \textit{Can we achieve effective 3D conditioning in diffusion models while maintaining computational efficiency and visual quality?}
+
+\section{Contributions}
+
+In this work, I introduce a novel approach that combines Feature-wise Linear Modulation (FiLM) for camera parameter conditioning with parallel image cross-attention adapters for visual conditioning. My key contributions are:
+
+\begin{enumerate}
+  \item \textbf{FiLM-based camera conditioning}: First application of FiLM to camera parameter encoding in diffusion models, providing direct geometric control without visual artifacts.
+  \item \textbf{Hybrid conditioning architecture}: A dual-stream approach combining global geometric modulation with selective visual attention, addressing fundamental trade-offs in novel view synthesis.
+  \item \textbf{Efficient adapter training}: Training only $585M$ of $2.9B$ parameters (20\%) while achieving comparable performance to full fine-tuning, with $4\times$ faster training.
+  \item \textbf{Systematic evaluation}: Comprehensive ablation studies and comparison with state-of-the-art methods, demonstrating effectiveness across metrics and datasets.
+\end{enumerate}
+
+Proposed method achieves competitive results with Zero123++ \cite{zero1to3} and MVAdapter \cite{mvadapter} while requiring significantly fewer computational resources and producing fewer visual artifacts.
+
+\section{Research Questions}
+
+This work addresses four specific research questions:
+\begin{itemize}
+  \item Can Feature-wise Linear Modulation (FiLM) provide an effective alternative to complex raymap representations for camera parameter encoding?
+  \item Can a hybrid conditioning strategy combining visual and geometric information achieve superior results compared to existing single-modal approaches?
+  \item What is the optimal balance between training efficiency and model expressiveness in adapter-based approaches for novel view synthesis?
+  \item How can we effectively condition the diffusion process to generate novel views of objects from a single reference image?
+\end{itemize}
+
+\section{Structure}
+
+Chapter 2 reviews related work in 3D reconstruction, diffusion models, and novel view synthesis. Chapter 3 details the proposed method, including theoretical justification and architectural design. Chapter 4 describes data preparation with emphasis on lighting consistency between rendered images. Chapter 5 presents experimental evaluation including ablation studies and comparisons with state-of-the-art methods. Chapter 6 concludes with limitations, and future work.

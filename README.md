@@ -1,8 +1,7 @@
 # TODO:
 
-- [ ] Wrzuć wyniki eksperymentów E3 i E4
-- [ ] Napisz wstęp i podsumowanie
-- [ ] Napisz abstract
+- [ ] Napisz podsumowanie
+- [ ] Wrzuć wyniki eksperymentów E4
 - [ ] Znajdź dużo przykładowych obrazów wygenerowanych przez model
 
 
