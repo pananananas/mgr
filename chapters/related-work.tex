@@ -1,69 +1,12 @@
 \Chapter{Related Work}\label{chapter:related}
 
-In this chapter, I provide a comprehensive review of existing
-approaches relevant to multi-view image generation.
+In this chapter, I provide a comprehensive review of existing approaches relevant to novel view synthesis from single or few input images. The chapter begins by introducing the fundamental task of Novel View Synthesis (NVS) and its significance in computer vision and 3D understanding. We then examine traditional 3D reconstruction techniques (Section \ref{sec:3d-reconstruction}) and their inherent limitations, particularly for sparse-input scenarios, which motivates the exploration of generative methods. Subsequently, the discussion shifts to the foundational principles of Deep Generative Models for Image Synthesis, with a focus on diffusion models (Section \ref{sec:text-to-image}).
 
-The chapter begins by introducing the fundamental task of Novel View
-Synthesis (NVS) and its significance. We then delve into traditional
-3D reconstruction techniques (Section \ref{sec:3d-reconstruction})
-and their inherent limitations, particularly for sparse-input
-scenarios, which motivates the exploration of generative methods.
-Subsequently, the discussion shifts to the foundational principles of
-Deep Generative Models for Image Synthesis, with a focus on diffusion
-models (Section \ref{sec:text-to-image}).
-
-Building on this, we explore various methods for Conditioning
-Diffusion Models for Enhanced Control and New Tasks (Section
-\ref{sec:conditioning-diffusion}), including the crucial role of
-camera parameter encoding and the concept of lightweight adaptation
-through adapters.
-
-The core of the chapter then examines state-of-the-art
-Diffusion-based Multi-View Image Generation techniques (Section
-\ref{sec:multi-view-diffusion}), covering both single reference image
-novel view synthesis and architectures for coherent multi-view
-generation, including specialized multi-view adapters.
-%  Finally, the chapter will conclude with a summary of the discussed
-% methods and highlight identified research gaps that this thesis
-% aims to address.
+Building on this foundation, we explore various methods for Conditioning Diffusion Models for Enhanced Control and Adaptation to New Tasks (Section \ref{sec:conditioning-diffusion}), including crucial techniques for camera parameter encoding and lightweight adaptation mechanisms. The core of the chapter then examines state-of-the-art Diffusion-based Novel View Synthesis techniques (Section \ref{sec:novel-view-diffusion}), covering both single-image novel view synthesis and architectures for coherent multi-view generation.
 
 \section{Traditional 3D Reconstruction Approaches}\label{sec:3d-reconstruction}
 
-Simultaneous Localization and Mapping (SLAM) is a fundamental concept
-in the field of computer vision and robotics. It refers to the
-process of simultaneously estimating the camera's position and
-orientation in a 3D environment while mapping the environment itself.
-Originally, SLAM was used to track the position of a robot in a 3D
-space, but it has since been applied to a wide range of problems,
-including augmented reality, medical applications and novel view
-synthesis.
-
-SLAM works by processing sensor data in real-time to create a map of the unknown environment while simultaneously tracking the position of the sensor within that map. This process typically involves several key steps:
-\begin{enumerate}
-  \item \textbf{Feature Detection}: Identifying distinctive points or features in the environment from sensor data
-  \item \textbf{Data Association}: Matching observed features with previously mapped features
-  \item \textbf{State Estimation}: Updating the estimated pose of the camera and the map of the environment
-  \item \textbf{Loop Closure}: Recognizing when the sensor has returned to a previously visited location and adjusting the map accordingly to reduce accumulated errors
-\end{enumerate}
-
-To address these requirements, researchers have
-concentrated on creating techniques for machines to independently
-build ever more precise scene representations. This integration of
-robotics, computer vision, sensor technology, and recent advancements
-in artificial intelligence has shaped this field.
-
-Typically, SLAM techniques use a combination of data sources, such as
-images, laser range scans, sonars and GPS to effectively map an environment.
-In this work I will focus on the use of images for 3D reconstruction.
-
-\subsection{Structure from Motion Pipeline}
-
-One of the most popular methods for 3D reconstruction from images is
-COLMAP \cite{colmap}. COLMAP is a general-purpose
-structure-from-motion (SfM) \cite{multipleviewgeometry} system that
-can automatically reconstruct 3D scenes from a collection of images.
-It is a popular choice for 3D reconstruction due to its accuracy,
-speed, and ease of use.
+Before examining generative approaches to novel view synthesis, it is essential to understand the limitations of traditional 3D reconstruction methods that motivate the shift toward diffusion-based solutions.
 
 \begin{figure}[h]
   \centering
@@ -72,128 +15,46 @@ speed, and ease of use.
   \label{fig:colmap-pipeline}
   % https://colmap.github.io/tutorial.html
 \end{figure}
-
-Structure from Motion works in two main steps [Figure
-\ref{fig:colmap-pipeline}]:
-\begin{enumerate}
-  \item \textbf{Correspondence Search}: Identify the unique landmarks
-    (features) in all of the images and match the same landmarks across images.
-  \item \textbf{Incremental Reconstruction}: Estimates the camera
-    poses and triangulates 3D points through an iterative process.
-\end{enumerate}
-
-First step of correspondence search is feature extraction. COLMAP
-uses SIFT \cite{sift} and ORB \cite{orb} methods to extract features
-from images. Scale-invariant feature transform (SIFT) is a method for
-detecting keypoints that contrast with their surroundings and
-describing the local image content around them. It is invariant to
-rotation and scale, making it robust for matching features across images taken from different viewpoints and distances. Oriented FAST and Rotated BRIEF (ORB) is a more
-computationally efficient alternative to SIFT, combining a high-speed
-FAST detector with optimized descriptors for rotation invariance,
-offering comparable matching performance with significantly reduced computational requirements.
+Structure from Motion (SfM) represents the classical approach to 3D reconstruction from images. Methods like COLMAP \cite{colmap} demonstrate remarkable success in reconstructing 3D scenes from dense image collections through a two-stage pipeline \ref{fig:colmap-pipeline}: correspondence search to identify and match features across images, followed by incremental reconstruction to estimate camera poses and triangulate 3D points.
 
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.7\textwidth]{images/related-work/feature-matching.jpg}
-  \caption{Feature matching result}
+  \caption{Feature matching across multiple views - a fundamental requirement for traditional SfM approaches}
   \label{fig:matching-features}
   % https://blog.roboflow.com/image-matching/
 \end{figure}
 
-Second step is matching features across images. Feature matching is a
-process of finding the best matches of features across the images.
-COLMAP uses a variant of the FLANN \cite{flann} library to find the
-best matches for each feature. FLANN is a library for performing fast
-approximate nearest neighbor searches in high dimensional spaces.
-Feature matching is visualized in Figure \ref{fig:matching-features}.
+The success of SfM relies heavily on several key components: robust feature detection (typically using SIFT \cite{sift} or ORB \cite{orb}), accurate feature matching across viewpoints, and bundle adjustment to refine camera poses and 3D points. Dense reconstruction methods like Multi-View Stereo (MVS) can then generate detailed 3D models from the sparse SfM output.
 
-Then the geometric verification step uses the prior knowledge about
-the camera model and motion to remove outliers, preparing the
-verified feature matches for the subsequent Incremental Reconstruction phase.
+More recent learning-based approaches, including Neural Radiance Fields (NeRF) \cite{nerf}, have shown remarkable results for novel view synthesis. NeRF represents scenes as continuous 5D functions encoded in neural networks, taking camera poses from SfM as input and using volume rendering to synthesize photorealistic novel views with impressive detail and view consistency.
 
-When it comes to Incremental Reconstruction, the process is as follows:
-\begin{enumerate}
-  \item \textbf{Camera Pose Estimation}: Estimate the camera location
-    and direction in 3D space for each image.
-  \item \textbf{Triangulation}: Triangulate 3D points of the observed
-    objects from the camera poses and matched features.
-  \item \textbf{Bundle Adjustment}: Refine the camera poses and 3D
-    points to minimize the reprojection error.
-\end{enumerate}
+\subsection{Fundamental Limitations for Sparse Input Scenarios}
 
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=0.5\textwidth]{images/related-work/Structure-from-Motion-SfM-process-is-illustrated-The-structure-in-the.png}
-  \caption{Camera pose estimation}
-  \label{fig:camera-pose-estimation}
-  % https://www.researchgate.net/figure/Structure-from-Motion-SfM-process-is-illustrated-The-structure-in-the_fig2_269327935
-\end{figure}
-
-The camera pose estimation (visualized in Figure
-\ref{fig:camera-pose-estimation}) starts with an initialization step,
-where the initial pair of images and matched features between them
-are used to estimate the camera pose. Then, the algorithm proceeds to
-the loop (Figure \ref{fig:colmap-pipeline}), where the next image is
-registered to the reconstruction and the camera pose is estimated
-again (triangulation step). After that the bundle adjustment step is
-performed to refine the camera poses and 3D points to be consistent
-with the entire dataset with images of a given scene. This
-optimization process typically uses the Levenberg-Marquardt algorithm
-to minimize reprojection error. This process is repeated for each
-subsequent batch of images, updating the camera poses and 3D points.
-
-\subsection{Methods for 3D Reconstruction}
-
-The field of 3D reconstruction encompasses various approaches beyond the basic Structure from Motion pipeline. These methods can be broadly categorized into two groups: sparse reconstruction (like SfM) and dense reconstruction methods.
-
-\subsubsection{Dense Reconstruction Methods}
-
-While SfM provides camera poses and a sparse point cloud, dense reconstruction methods aim to create a complete 3D model with detailed surface information. Notable methods include:
+Traditional 3D reconstruction methods face critical limitations when applied to sparse input scenarios - particularly the extreme case of single-image novel view synthesis that forms the focus of this thesis:
 
 \begin{enumerate}
-  \item \textbf{Multi-View Stereo (MVS)}: After obtaining camera poses through SfM, MVS algorithms like PMVS \cite{pmvs} generate dense point clouds by matching pixels across multiple images.
+  \item \textbf{Insufficient correspondences}: SfM requires reliable feature matches across multiple views. With only one or very few images, establishing robust correspondences becomes impossible.
 
-  \item \textbf{Depth Map Fusion}: Methods such as COLMAP's MVS pipeline estimate per-image depth maps and then fuse them into a consistent 3D model.
+  \item \textbf{Geometric ambiguity}: Single images provide incomplete depth information and cannot resolve occlusions, leading to fundamental ambiguities in 3D structure.
 
-  \item \textbf{Neural Radiance Fields (NeRF)} \cite{nerf}: A more recent approach that represents scenes as continuous 5D functions (spatial location and viewing direction) encoded in neural networks. NeRF takes camera poses from SfM as input and uses ray tracing to synthesize novel views with remarkable detail and view consistency.
+  \item \textbf{View-dependent effects}: Materials with specular reflections or varying appearance cannot be accurately modeled without observing them from multiple known viewpoints.
+
+  \item \textbf{Scale and pose estimation}: Without multiple views, determining absolute scale and object pose becomes severely under-constrained.
 \end{enumerate}
 
-\subsubsection{Learning-based Reconstruction}
+These limitations have motivated the development of generative approaches to novel view synthesis, particularly using diffusion models trained on large datasets of 3D assets. Instead of explicitly reconstructing geometry through correspondences, these methods leverage the power of deep learning to learn and synthesize plausible views from learned priors about object appearance and structure.
 
-Recent approaches leverage deep learning for 3D reconstruction, often using SfM-derived data for supervision or initialization:
-
-\begin{enumerate}
-  \item \textbf{Learned MVS}: Methods like MVSNet \cite{mvsnet} use convolutional neural networks to learn the depth estimation process directly from images and camera parameters.
-
-  \item \textbf{Single-view Reconstruction}: Networks like Mesh R-CNN \cite{meshrcnn} can estimate 3D structure from a single image by leveraging prior knowledge learned from large datasets.
-\end{enumerate}
-
-\subsection{Limitations of 3D Reconstruction}
-
-Structure from Motion is a powerful tool for 3D reconstruction, demonstrating high effectiveness across a variety of scenarios. However, it encounters significant challenges. These include dealing with textureless surfaces, reflective materials, and the computational complexity of processing high-resolution images. Most importantly in the context of this thesis, it struggles with sparse input scenarios, such as those involving a single image or only a few images.
-
-Traditional 3D reconstruction methods like SfM and MVS typically require a dense collection of images with sufficient overlap to establish accurate feature correspondences and camera pose estimations. When faced with limited input views—particularly in the extreme case of a single image—these methods often fail to generate complete and accurate 3D representations. The quality of reconstruction degrades significantly due to:
-
-\begin{enumerate}
-  \item \textbf{Geometric ambiguity}: A single image or sparse set of images provides incomplete information about occluded regions and depth, leading to ambiguous geometry.
-
-  \item \textbf{Feature matching limitations}: Fewer images means fewer opportunities to establish reliable feature correspondences across different viewpoints.
-
-  \item \textbf{Inability to triangulate}: Robust triangulation requires features to be visible from multiple viewpoints, which is not possible with very limited inputs.
-
-  \item \textbf{View-dependent effects}: Materials with specular reflections or varying appearance based on viewpoint cannot be accurately modeled without multiple observations.
-\end{enumerate}
-
-These limitations have motivated the development of generative approaches to novel view synthesis, particularly using diffusion models trained on large datasets of rendered images of 3D models. Instead of explicitly reconstructing geometry, these methods leverage the power of deep learning to hallucinate plausible views from unseen perspectives.
+Modern 3D generation pipelines, such as InstantMesh \cite{instantmesh}, exemplify this paradigm shift by using diffusion models for multi-view generation as a first step, followed by 3D reconstruction from the synthesized views.
 
 \begin{figure}[h]
   \centering
   \includegraphics[width=\textwidth]{images/related-work/instantmesh.png}
-  \caption{InstantMesh}
+  \caption{InstantMesh pipeline showing novel view synthesis as the foundation for 3D reconstruction}
   \label{fig:instantmesh}
 \end{figure}
 
-Modern approaches of 3D object generation, such as InstantMesh \cite{instantmesh}, leverage these diffusion models to generate multiple consistent views of an object from minimal input (a single image or even a text prompt). This novel view synthesis is the first step in a pipeline \ref{fig:instantmesh} that can be used to create a 3D model of the object, and it is this particular step that forms the central focus of this thesis.
+This transition from geometric reconstruction to generative synthesis motivates the focus of this thesis on developing efficient and effective diffusion-based approaches for novel view synthesis.
 
 \section{Deep Generative Models for Image Synthesis}\label{sec:text-to-image}
 
@@ -208,7 +69,7 @@ Variational Autoencoders (VAEs) \cite{vae} are another class of generative model
 \subsection{Diffusion Models}
 Diffusion models have recently become the dominant paradigm in high-fidelity image generation. They are inspired by non-equilibrium thermodynamics, specifically diffusion processes.
 
-\subsubsection{Core Concept: The Diffusion Process}
+\subsubsection{The Diffusion Process}
 The core idea behind diffusion models involves two processes: a forward (or diffusion) process and a reverse (or denoising) process.
 In the \textbf{forward process}, a known image $x_0$ from the dataset is gradually perturbed by adding small amounts of Gaussian noise over a sequence of $T$ steps. This process progressively corrupts the image until, at step $T$, it becomes indistinguishable from pure isotropic Gaussian noise. The parameters of this noising process are fixed.
 
@@ -319,33 +180,75 @@ Alongside per-pixel data, global camera pose conditioning methods provide a more
 One approach involves \textit{vectorized transformation embeddings}. For instance, Zero-1-to-3 \cite{zero1to3} encodes the relative camera viewpoint transformation \(T = [R|t]\) between an input view and a target view as a 4x4 matrix. This matrix is flattened into a 16-dimensional vector, which is then projected by a small Multi-Layer Perceptron (MLP) and added to the timestep embedding. This globally influences the diffusion process by providing context about the desired viewpoint change.
 Another technique employs \textit{decomposed pose vectors for attention mechanisms}. MV-Adapter \cite{mvadapter} represents each camera view using a 12-dimensional vector, which includes 3D camera coordinates and a 9D flattened rotation matrix. These vectors are processed by an MLP and then fed into multi-view attention layers as key and value components. This allows the model to explicitly attend to pose information when correlating features across different views, aiding in the generation of coherent multi-view imagery.
 
-\section{Diffusion-based Multi-View Image Generation}\label{sec:multi-view-diffusion}
+\section{Diffusion-based Novel View Synthesis}\label{sec:novel-view-diffusion}
 
-Building upon the camera parameter encoding techniques discussed in Section \ref{ssec:camera_param_encoding}, this section delves into specific diffusion-based models and architectures designed for generating single or multiple consistent views of a 3D scene or objects. These methods aim to leverage the generative power of diffusion models to synthesize novel perspectives, often with the goal of creating coherent 3D representations.
+Building upon the camera parameter encoding techniques discussed in Section \ref{ssec:camera_param_encoding}, this section examines specific diffusion-based models and architectures designed for novel view synthesis from single or multiple input images. These methods aim to leverage the generative power of diffusion models to synthesize novel perspectives while maintaining consistency with input views and underlying 3D structure.
 
-\subsection{Single Reference Image Novel View Synthesis}
-Novel View Synthesis (NVS) from a single reference image is a challenging task that several diffusion-based approaches have tackled.
+\subsection{Zero-1-to-3: Pioneering Single-Image Novel View Synthesis}
 
-Zero-1-to-3 \cite{zero1to3}, an early pioneer in this area, conditions a latent diffusion model on a single reference image and a relative camera pose transformation \(T=[R|t]\) to generate a novel view. This model is fine-tuned from a pre-trained text-to-image model (Stable Diffusion). While demonstrating the potential for NVS without explicit 3D reconstruction, approaches like Zero-1-to-3 can sometimes face challenges in maintaining strong geometric consistency across widely varying generated views, a point often highlighted by subsequent multi-view generation methods \cite{imagedream, cat3d}.
+Zero-1-to-3 \cite{zero1to3} represents a foundational contribution to diffusion-based Novel View Synthesis, demonstrating that large-scale pre-trained diffusion models contain rich geometric priors that can be leveraged for view synthesis tasks. Beyond the methodological contribution, Zero-1-to-3 introduced the use of the Objaverse dataset \cite{objaversexl} for training diffusion-based novel view synthesis models, which has become a standard training resource for subsequent work in this field. The method fine-tunes Stable Diffusion to condition on both a reference image and relative camera transformations, enabling zero-shot novel view synthesis from a single RGB image.
 
-Concurrently, Watson et al. \cite{novelviewsynthesisdiffusion} proposed 3DiM, a diffusion model designed for NVS that operates in pixel space. It conditions on a single source RGB-D image (though it can function with RGB only) and an absolute target camera pose. 3DiM utilizes the raymap technique for camera conditioning, as detailed in Section \ref{ssec:camera_param_encoding}, by constructing a raymap containing per-pixel 3D origin and direction, which is then positionally encoded and concatenated with the input image to the U-Net \cite{novelviewsynthesisdiffusion}. The model is trained to predict the clean target image from a noised source image.
+\textbf{Technical Approach}: Zero-1-to-3 employs a hybrid conditioning mechanism combining high-level semantic information through CLIP embeddings and low-level detail preservation through direct image concatenation. The relative camera transformation $(R, T)$ is encoded as a compact vector and integrated with the CLIP embedding of the input image to form a "posed CLIP" embedding for cross-attention conditioning.
 
-\subsection{Coherent Multi-View Generation Architectures}
-To improve consistency and enable robust 3D asset creation, several architectures focus on jointly generating or reasoning about multiple views simultaneously.
+\textbf{Key Contributions}: The work demonstrates that Internet-scale pre-training enables diffusion models to learn geometric relationships between viewpoints, even when trained only on 2D images. This insight opened the door for subsequent work in diffusion-based 3D generation.
 
-MVDream, often cited as a foundational multi-view model \cite{imagedream, mvadapter, cat3d}, extends diffusion models to generate multiple (e.g., four orthogonal) views from a shared text prompt by incorporating multi-view attention mechanisms. It learns from both 2D images and 3D assets to enhance 3D consistency \cite{mvadapter}.
+\textbf{Limitations}: While groundbreaking, Zero-1-to-3 can struggle with maintaining geometric consistency across widely varying viewpoints, particularly for complex objects with intricate geometry or materials.
 
-Building on such concepts, ImageDream \cite{imagedream} introduces an image-prompt multi-view diffusion model. It takes a single image prompt and aims to generate multiple consistent views of an object. ImageDream leverages the canonical camera coordination (discussed in Section \ref{ssec:camera_param_encoding}) established by MVDream, where a default camera view corresponds to the object's front view. Its key architectural contribution is a multi-level image-prompt controller that integrates image features at global (CLIP global embedding), local (CLIP hidden features), and pixel (VAE encoded image latent) levels into the MVDream-like diffusion U-Net \cite{imagedream}. The pixel controller, for instance, concatenates the input image prompt's latent as an additional frame to the four target views, enabling 3D self-attention across all five frames. ImageDream employs Multi-View Score Distillation Sampling (MV-SDS) for reconstructing a NeRF from the generated views.
+\subsection{MVDream: Multi-View Consistent Generation}
 
-CAT3D \cite{cat3d} presents a multi-view diffusion model designed to simulate a real-world capture process by generating a large set of consistent novel views from one or more input images and specified target camera poses. Its architecture is similar to video latent diffusion models \cite{stablevideodiffusion}, employing 3D self-attention (2D in space and 1D corresponding to time across images) and is initialized from a pre-trained latent diffusion model. For camera conditioning, CAT3D uses the raymap approach (see Section \ref{ssec:camera_param_encoding}), where ray origins and directions are computed relative to the first conditional image's camera pose and concatenated channel-wise to the latents \cite{cat3d}. To generate a large number of views (e.g., 80 for single-image input, up to 960 for few-view), CAT3D can group target viewpoints and, for single-image inputs, may first autoregressively sample a set of anchor views before generating the remaining views. These generated views are then used as input to a robust 3D reconstruction pipeline (e.g., Zip-NeRF).
+MVDream extends the paradigm established by Zero-1-to-3 to generate multiple consistent views simultaneously from text prompts. Rather than generating views independently, MVDream introduces multi-view attention mechanisms that enable reasoning about 3D consistency during the generation process.
 
-ViewCrafter \cite{viewcrafter}, as noted by CAT3D \cite{cat3d}, combines video latent diffusion models with 3D point cloud priors. This approach aims to achieve high-fidelity and consistent novel views by leveraging explicit 3D information alongside the generative capabilities of video diffusion models, enabling precise camera control.
+\textbf{Architecture}: MVDream modifies the self-attention layers of a pre-trained diffusion model to operate across multiple views simultaneously. Features from different viewpoints are concatenated and processed through extended attention mechanisms, allowing the model to enforce consistency constraints between views.
 
-While these architectures show impressive results, methods requiring full fine-tuning of large pre-trained models are expensive and may risk performance degradation if high-quality, large-scale 3D data for fine-tuning is scarce.
+\textbf{Training Strategy}: The model is trained on both 2D image datasets and rendered multi-view data from 3D assets, learning to balance high-quality image generation with 3D consistency. A canonical camera coordinate system is established where the default view corresponds to the object's front-facing orientation.
 
-\subsection{Specialized Multi-View Adapters}
-To mitigate the challenges of full fine-tuning, adapter-based methods offer a lightweight alternative for enabling pre-trained models with multi-view generation capabilities.
+\textbf{Impact}: MVDream has become a foundational model for many subsequent 3D generation pipelines, particularly those using Score Distillation Sampling (SDS) for optimizing neural radiance fields.
 
-MV-Adapter \cite{mvadapter} is a notable example, introducing a plug-and-play adapter for multi-view image generation that enhances pre-trained text-to-image diffusion models while preserving their original network structure and feature space. It employs a decoupled attention mechanism: the original spatial self-attention layers of the pre-trained model are kept frozen, and new multi-view attention layers are created by duplicating the structure and weights of these original layers. These new layers, organized in a parallel architecture, process features from multiple views (typically packed along the batch dimension) and learn geometric knowledge efficiently \cite{mvadapter}.
+\subsection{ImageDream: Image-Conditioned Multi-View Generation}
 
-For encoding geometric information, MV-Adapter \cite{mvadapter} integrates camera parameters using raymaps, an approach also seen in methods like 3DiM \cite{novelviewsynthesisdiffusion} and CAT3D \cite{cat3d}. These raymaps can be positionally encoded and are then typically supplied as additional input channels to the U-Net, processed by the adapter's components. This method of providing direct geometric cues, combined with other conditioning signals like text or image embeddings processed through its attention mechanisms, allows for flexible control in tasks such as text-to-3D and image-to-3D generation. By updating significantly fewer parameters than full fine-tuning—primarily those of the adapter module—MV-Adapter enables efficient training, preserves the rich priors of the base model, and reduces the risk of overfitting.
+Building on MVDream's multi-view attention framework, ImageDream \cite{imagedream} introduces image-prompt conditioning for multi-view generation. This addresses the common requirement of generating consistent views from a single reference image rather than just text descriptions.
+
+\textbf{Multi-Level Image Conditioning}: ImageDream integrates image features at three levels:
+\begin{itemize}
+  \item \textbf{Global level}: CLIP global embeddings for high-level semantic understanding
+  \item \textbf{Local level}: CLIP hidden features for intermediate spatial information
+  \item \textbf{Pixel level}: VAE-encoded image latents concatenated as an additional frame for detailed appearance transfer
+\end{itemize}
+
+\textbf{Technical Innovation}: The pixel-level controller treats the input image as an additional view in the multi-view attention mechanism, enabling 3D self-attention across all five frames (four target views plus the reference image).
+
+\subsection{CAT3D: Large-Scale Consistent View Generation}
+
+CAT3D \cite{cat3d} presents a multi-view diffusion model designed to simulate realistic capture processes by generating large sets of consistent novel views (80+ views for single-image input, up to 960 for few-view scenarios).
+
+\textbf{Architecture Design}: CAT3D employs a video-latent-diffusion-like architecture with 3D self-attention (2D spatial + 1D temporal across views). The model is initialized from pre-trained latent diffusion models to leverage existing image priors.
+
+\textbf{Camera Conditioning}: Following the raymap approach from 3DiM \cite{novelviewsynthesisdiffusion}, CAT3D computes ray origins and directions relative to the first conditional image's camera pose. These are positionally encoded and concatenated channel-wise to the latent representations.
+
+\textbf{Scalable Generation}: For large view counts, CAT3D employs a hierarchical generation strategy, first sampling anchor views autoregressively, then generating remaining views conditioned on the anchors.
+
+\subsection{MV-Adapter: Efficient Adapter-Based Multi-View Generation}
+
+MV-Adapter \cite{mvadapter} introduces the first adapter-based solution for multi-view generation, addressing computational efficiency concerns while preserving the quality and capabilities of large pre-trained models.
+
+\textbf{Decoupled Attention Architecture}: Rather than modifying existing self-attention layers, MV-Adapter duplicates these layers to create specialized multi-view attention modules. This preserves the original feature space while enabling efficient training of only the adapter parameters.
+
+\textbf{Parallel Organization}: The duplicated attention layers are organized in parallel rather than serial architecture, allowing them to inherit pre-trained image priors effectively while learning geometric knowledge. Output projections are zero-initialized to prevent disruption of the original feature space.
+
+\textbf{Unified Conditioning}: MV-Adapter supports both camera parameter conditioning (through raymaps) and geometric conditioning (through position and normal maps), enabling applications in both object generation and texture synthesis.
+
+\textbf{Adaptability}: The adapter design allows integration with various T2I model derivatives, including personalized models, distilled models, and control networks, significantly expanding application possibilities.
+
+\subsection{Architectural Innovations and Technical Insights}
+
+The evolution of diffusion-based novel view synthesis reveals several key architectural patterns and insights:
+
+\textbf{Attention Mechanisms}: The progression from single-view conditioning (Zero-1-to-3) to multi-view attention (MVDream) to adapter-based attention (MV-Adapter) demonstrates the importance of architectural choices in balancing quality, consistency, and efficiency.
+
+\textbf{Camera Representation}: Various camera conditioning approaches have emerged, from simple pose vectors in Zero-1-to-3 to sophisticated raymap representations in CAT3D and MV-Adapter. The choice of representation significantly impacts the model's ability to generalize to diverse viewpoints.
+
+\textbf{Training Efficiency}: The shift toward adapter-based approaches (MV-Adapter) addresses practical limitations of full model fine-tuning, enabling training on larger base models and higher resolutions while preserving pre-trained knowledge.
+
+  \textbf{Multi-Scale Integration}: Methods like ImageDream demonstrate the importance of multi-level feature integration for effective image conditioning, combining global semantic understanding with detailed appearance transfer.
+
+  Despite significant progress, current methods face ongoing challenges in geometric consistency for complex viewpoint changes, computational efficiency for high-resolution generation, and generalization to diverse object categories and lighting conditions. These limitations motivate the development of more efficient and robust approaches to diffusion-based Novel View Synthesis.

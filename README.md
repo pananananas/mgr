@@ -1,3 +1,11 @@
+# TODO:
+
+- [ ] Wrzuć wyniki eksperymentów E3 i E4
+- [ ] Napisz wstęp i podsumowanie
+- [ ] Napisz abstract
+- [ ] Znajdź dużo przykładowych obrazów wygenerowanych przez model
+
+
 # A Method for Image Generation Using Conditional Multi-Views
 
 Aktualna wersja pracy w pliku `main.pdf`.
