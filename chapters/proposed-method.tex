@@ -7,17 +7,17 @@ In this chapter, I describe the proposed method for adapting a pre-trained 2D di
 Despite the significant progress in diffusion-based novel view synthesis, several critical limitations motivate the development of my approach:
 
 \begin{enumerate}
-  \item \textbf{Training Efficiency vs. Model Expressiveness}: While MV-Adapter \cite{mvadapter} introduced adapter-based training for multi-view generation, existing approaches face a trade-off between computational efficiency and model expressiveness. Full fine-tuning provides maximum flexibility but is computationally prohibitive for large models, while extremely lightweight adapters may limit the model's ability to learn complex 3D relationships.
+  \item \textbf{Training Efficiency vs. Model Expressiveness}: Existing approaches face a fundamental trade-off between computational efficiency and model expressiveness. While MV-Adapter \cite{mvadapter} introduced adapter-based training, full fine-tuning remains computationally prohibitive for large models, yet extremely lightweight adapters may limit the model's ability to learn complex 3D relationships.
 
-  \item \textbf{Camera Conditioning Limitations}: Current methods predominantly rely on either simple pose vectors (Zero-1-to-3 \cite{zero1to3}) or complex raymap representations (CAT3D \cite{cat3d}, MV-Adapter \cite{mvadapter}). Pose vectors provide insufficient geometric detail for complex viewpoint changes, raymaps inherently struggle to model complex materials like glass or reflective surfaces, and often introduce visual artifacts that disrupt the diffusion model's ability to synthesize realistic images.
+  \item \textbf{Camera Conditioning Limitations}: Current methods rely on either simple pose vectors (Zero-1-to-3 \cite{zero1to3}) that provide insufficient geometric detail for complex viewpoint changes, or complex raymap representations (CAT3D \cite{cat3d}, MV-Adapter \cite{mvadapter}) that struggle with reflective materials and often introduce visual artifacts disrupting realistic image synthesis.
 
-  \item \textbf{Feature Integration Strategies}: Most existing methods either use cross-attention for all conditioning (requiring significant architectural modifications) or global feature concatenation (limiting spatial awareness). There is a gap in exploring hybrid conditioning strategies that can leverage both global geometric understanding and detailed visual feature transfer.
+  \item \textbf{Feature Integration Strategies}: Most existing methods either use cross-attention for all conditioning (requiring significant architectural modifications) or global feature concatenation (limiting spatial awareness). There is a gap in exploring hybrid conditioning strategies that leverage both global geometric understanding and detailed visual feature transfer.
 
-  \item \textbf{Training Data Quality and Lighting Inconsistencies}: A critical limitation affecting novel view synthesis quality stems from inconsistent lighting conditions in training data. The standard Objaverse rendering pipeline employs randomized lighting setups which, while intended to introduce variability, often result in images with harsh lighting, strong shadows, or scenes where objects are underexposed or completely obscured due to unfavorably positioned light sources. This inconsistency severely impacts the model's ability to learn reliable appearance and geometric relationships, directly affecting downstream 3D reconstruction applications where view consistency is crucial. The next chapter (Chapter \ref{chapter:data-preparation}) details the data preparation approach that addresses this issue.
+  \item \textbf{Training Data Quality and Lighting Inconsistencies}: Standard Objaverse rendering pipelines employ randomized lighting setups that often result in harsh lighting, strong shadows, or underexposed scenes due to unfavorable light positioning. This inconsistency severely impacts the model's ability to learn reliable appearance and geometric relationships, directly affecting downstream 3D reconstruction applications. Chapter \ref{chapter:data-preparation} details our approach to address this issue.
 
-  \item \textbf{Limited Viewpoint Generalization}: Existing methods trained on specific sets of camera perspectives often fail to generalize to novel viewpoint configurations. This constraint limits their effectiveness for applications requiring flexible camera positioning and novel view synthesis from arbitrary viewpoints.
+  \item \textbf{Limited Viewpoint Generalization}: Existing methods trained on specific camera perspective sets often fail to generalize to novel viewpoint configurations, limiting their effectiveness for applications requiring flexible camera positioning and arbitrary viewpoint synthesis.
 
-  \item \textbf{Adaptation to Unseen Objects}: Current methods often struggle to generalize beyond the object categories and styles present in their training data. This limitation becomes particularly apparent when applying trained models to real-world objects with different materials, textures, or geometric properties than those encountered during training, limiting practical applicability.
+  \item \textbf{Adaptation to Unseen Objects}: Current methods struggle to generalize beyond training data object categories and styles. This limitation becomes apparent when applying trained models to real-world objects with different materials, textures, or geometric properties, limiting practical applicability.
 
 \end{enumerate}
 
@@ -61,7 +61,6 @@ This hybrid approach allows the model to both globally adapt its processing for 
 
 \section{Method Overview}\label{sec:overview}
 
-\subsection{Method Summary}
 My proposed method adapts Stable Diffusion 2.1 for multi-view novel view synthesis by introducing two specialized conditioning streams. The method leverages strong generative capabilities of the pre-trained 2D diffusion model while equipping it with 3D spatial understanding through minimal architectural modifications.
 
 \begin{figure}[htbp]
@@ -75,8 +74,7 @@ The method adapts the Stable Diffusion 2.1 model, an inherently 2D generative fr
 
 Figure \ref{fig:my-method-diagram} illustrates the overall architecture of the proposed system, highlighting the flow of information and the interplay between the original diffusion model components and the newly introduced conditioning modules.
 
-\subsection{Core Innovation}
-The key innovation lies in the hybrid conditioning approach that combines:
+\textbf{Core Innovation}: The key innovation lies in the hybrid conditioning approach that combines:
 \begin{itemize}
   \item \textbf{Visual conditioning}: Parallel image cross-attention adapters that preserve visual consistency
   \item \textbf{Geometric conditioning}: FiLM-based camera parameter modulation for spatial awareness
