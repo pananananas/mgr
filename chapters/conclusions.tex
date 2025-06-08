@@ -1,10 +1,44 @@
-\Chapter{Conclusions and Future Work TODO}\label{chapter:conclusions}
-Zakończenie, podsumowuje najważniejsze wnioski, podaje możliwości
-dalszego rozwinięcia wykonanych prac i wskazuje obszar potencjalnego
-zastosowania pracy. Rezultaty pracy mają charakter poznawczy, mogą
-mieć charakter użytkowy. Należy dokonać analizy uzyskanych wyników.
-Rezultaty powinny charakteryzować się oryginalnością, a nawet w
-pewnym stopniu nowatorstwem. Praca zawiera (\dots). Zostało pokazane
-(\dots). Eksperymenty wykazały (\dots). Tu piszemy wnioski i obserwacje.
+\Chapter{Conclusions}\label{chapter:conclusions}
 
-Widzimy, że (\dots). Z tego powodu przyszła praca powinna obejmować (\dots).
+This thesis presents a novel approach to diffusion-based novel view synthesis that addresses fundamental challenges in 3D-aware image generation. Through systematic experimentation and careful architectural design, this work demonstrates that effective image and camera conditioning can be achieved while maintaining computational efficiency and visual quality. This chapter summarizes the key findings, answers the research questions posed in the introduction, discusses the limitations of the proposed approach, and outlines directions for future research.
+
+\section{Summary of Findings}
+
+The experimental validation demonstrated that:
+\begin{enumerate}
+  \item \textbf{FiLM-based camera conditioning} provides an effective alternative to complex raymap representations, achieving FID scores of [PLACEHOLDER] and CLIP scores of [PLACEHOLDER] with $cam\_mod\_strength \geq 0.75$, while maintaining artifact-free generation unlike raymap approaches that struggle with reflective materials.
+
+  \item \textbf{Hybrid conditioning strategy} combining visual and geometric information proves superior to single-modal approaches, with the optimal configuration ($img\_ref\_scale=1.0$, $cam\_mod\_strength=1.0$) demonstrating that both conditioning streams contribute complementary information for effective novel view synthesis.
+
+  \item \textbf{Adapter-based training} achieves optimal balance between efficiency and expressiveness, training only $585M$ parameters out of $2.9B$  ($20\%$) of the full model with $4\times$ faster training time ($9$ vs. $35$ hours) on $5000$ ObjaverseXL samples for $10$ epochs while achieving comparable performance to full fine-tuning across all evaluation metrics.
+
+  \item \textbf{Dual-stream conditioning mechanism} effectively processes single reference images through parallel image cross-attention adapters and FiLM modulation, enabling coherent novel view generation that maintains visual consistency while accurately reflecting target viewpoint geometry.
+\end{enumerate}
+
+\section{Limitations and Areas for Improvement}
+
+Despite the promising results, several limitations of the proposed approach warrant acknowledgment:
+
+\textbf{Resolution Constraints}: The current implementation operates at a maximum resolution of $768 \times 768$ pixels, which may be insufficient for applications requiring high-detail novel view synthesis. Scaling to higher resolutions would require addressing memory constraints and potentially redesigning the adapter architecture for computational efficiency.
+
+\textbf{Single-Object Focus}: The method is primarily designed and evaluated for single-object novel view synthesis. Extension to complex scenes with multiple objects, background elements, or scene-level novel view synthesis would require architectural modifications and different training strategies.
+
+\textbf{Limited Viewpoint Range}: While the training data covers comprehensive viewpoint distributions, extreme viewpoint changes (such as complete 180-degree rotations or significant elevation changes) may still pose challenges for geometric consistency, particularly for objects with complex occlusions or highly view-dependent materials.
+
+\textbf{Training Data Dependency}: The model's performance is inherently limited by the quality and diversity of the training data. Objects or materials significantly different from those in ObjaverseXL may not generalize well, requiring domain adaptation techniques or additional training data.
+
+\textbf{Inference Speed}: While competitive with similar methods, the 16-second inference time may be prohibitive for real-time applications or interactive systems requiring immediate novel view generation.
+
+\section{Future Research Directions}
+
+Several promising directions emerge from this work:
+
+\begin{itemize}
+  \item \textbf{Advanced architectural foundations}: Adapting the proposed FiLM-based conditioning to diffusion transformer architectures (Stable Diffusion 3 \cite{stable_diffusion_3, diffusion_transformers}) could achieve higher-quality image synthesis and improved geometric consistency through more powerful attention mechanisms, text enrichment, flow matching and scaling properties.
+
+  \item \textbf{Integrated 3D reconstruction pipelines}: Developing hybrid systems that combine explicit 3D reconstruction with generative synthesis could leverage both geometric and generative methods, reconstructing coarse 3D representations then using diffusion models to generate high-quality details such as Human3Diffusion \cite{human3diffusion}.
+
+  \item \textbf{Multi-view consistency and real-time optimization}: Future work could explore stronger geometric constraints for coherent multi-view synthesis and investigate model distillation or quantization for real-time applications in VR/AR and interactive systems.
+\end{itemize}
+
+The work presented in this thesis establishes a solid foundation for efficient and effective diffusion-based novel view synthesis. The demonstrated feasibility of FiLM-based camera conditioning and hybrid adapter architectures opens new research directions in 3D-aware generative modeling, with potential applications spanning computer graphics, virtual reality, robotics, and content creation industries. The systematic experimental framework and open-source implementation provide valuable resources for the research community to build upon these contributions.
