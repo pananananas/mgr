@@ -13,7 +13,7 @@ Despite the significant progress in diffusion-based novel view synthesis, severa
 
   \item \textbf{Feature Integration Strategies}: Most existing methods either use cross-attention for all conditioning (requiring significant architectural modifications) or global feature concatenation (limiting spatial awareness). There is a gap in exploring hybrid conditioning strategies that leverage both global geometric understanding and detailed visual feature transfer.
 
-  \item \textbf{Training Data Quality and Lighting Inconsistencies}: Standard Objaverse rendering pipelines employ randomized lighting setups that often result in harsh lighting, strong shadows, or underexposed scenes due to unfavorable light positioning. This inconsistency severely impacts the model's ability to learn reliable appearance and geometric relationships, directly affecting downstream 3D reconstruction applications. Chapter \ref{chapter:data-preparation} details our approach to address this issue.
+  \item \textbf{Training Data Quality and Lighting Inconsistencies}: Standard Objaverse rendering pipelines employ randomized lighting setups that often result in harsh lighting, strong shadows, or underexposed scenes due to unfavorable light positioning. This inconsistency severely impacts the model's ability to learn reliable appearance and geometric relationships, directly affecting downstream 3D reconstruction applications. Chapter \ref{chapter:data-preparation} details the approach to address this issue.
 
   \item \textbf{Limited Viewpoint Generalization}: Existing methods trained on specific camera perspective sets often fail to generalize to novel viewpoint configurations, limiting their effectiveness for applications requiring flexible camera positioning and arbitrary viewpoint synthesis.
 
@@ -40,7 +40,7 @@ The key insight is that FiLM's affine transformation $\gamma \odot \mathbf{h} + 
 
 \subsection{Cross-Modal Conditioning}
 
-FiLM has been proven effective for cross-modal conditioning, where information from one modality (e.g., text) influences processing in another modality (e.g., images) \cite{film, filmedunet}. Our application extends this framework by treating camera parameters as a distinct geometric modality.
+FiLM has been proven effective for cross-modal conditioning, where information from one modality (e.g., text) influences processing in another modality (e.g., images) \cite{film, filmedunet}. This work extends this framework by treating camera parameters as a distinct geometric modality.
 
 The theoretical foundation rests on FiLM's ability to perform \textit{conditional computation} - the same feature map $\mathbf{h}$ can be processed differently based on the conditioning signal. For camera conditioning:
 
@@ -137,7 +137,7 @@ where $\mathbf{E}_{cam} \in \mathbb{R}^{d_{cam}}$ represents the final camera em
 The MLP details are provided in the next chapter (Chapter \ref{chapter:experiments}).
 
 \subsubsection{FiLM-based Network Modulation}
-The high-dimensional camera embedding produced by the $\text{CameraEncoder}$ is used to modulate the activations within the main denoising U-Net via Feature-wise Linear Modulation (FiLM) layers \cite{film}. This approach is motivated by the success of FiLM in cross-modal conditioning tasks, particularly its application in FiLMed-UNet \cite{filmedunet} for medical image segmentation with metadata conditioning. As detailed in Chapter \ref{chapter:related}, FiLM provides an effective mechanism for conditioning neural network activations. Our novel contribution lies in applying this mechanism specifically to camera parameter conditioning in diffusion models, enabling camera pose information to dynamically influence feature representations throughout the network.
+The high-dimensional camera embedding produced by the $\text{CameraEncoder}$ is used to modulate the activations within the main denoising U-Net via Feature-wise Linear Modulation (FiLM) layers \cite{film}. This approach is motivated by the success of FiLM in cross-modal conditioning tasks, particularly its application in FiLMed-UNet \cite{filmedunet} for medical image segmentation with metadata conditioning. As detailed in Chapter \ref{chapter:related}, FiLM provides an effective mechanism for conditioning neural network activations. This work applies this mechanism specifically to camera parameter conditioning in diffusion models, enabling camera pose information to dynamically influence feature representations throughout the network.
 
 \textbf{Modulator Architecture}: For each U-Net block that requires camera conditioning, the method employs dedicated modulator networks that generate scale and shift parameters from the camera embedding:
 \[ [\boldsymbol{\gamma}; \boldsymbol{\beta}] = \text{MLP}_{mod}(\mathbf{E}_{cam}) \]
