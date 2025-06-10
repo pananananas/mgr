@@ -116,11 +116,17 @@ right=25mm]{geometry}
 \usepackage{titling}
 
 % Umożliwia modyfikowanie stylu spisu treści
-\usepackage[subfigure]{tocloft}
+\usepackage{tocloft}
 
 \tocloftpagestyle{tableOfContentStyle}
 
 \setcounter{tocdepth}{1}
+
+% Fix for hyperref compatibility
+\setlength{\cftbeforefigskip}{0pt}
+\setlength{\cftbeforetabskip}{0pt}
+\setcounter{lofdepth}{1}
+\setcounter{lotdepth}{1}
 
 % Definiowanie własnych stylów nagłówków i/lub stopek
 \usepackage{fancyhdr}
