@@ -65,7 +65,7 @@ This section presents a series of experiments designed to dissect the proposed a
 To determine the optimal operating range and sensitivity of the model to the $img\_ref\_scale$ (controlling influence of reference image features) and $cam\_mod\_strength$ (controlling influence of camera FiLM modulation) hyperparameters.
 
 \textbf{Methodology}:
-A hiperparameter tuning was performed by training separate models with various combinations of conditioning strength parameters. These experiments were conducted on a 5,000-sample subset of the ObjaverseXL dataset. The $img\_ref\_scale$ values tested were \{0.1, 0.25, 0.5, 0.75, 1.0\} and $cam\_mod\_strength$ values tested were \{0.1, 0.25, 0.5, 0.75, 1.0\}. Performance during these validation runs was evaluated using PSNR, SSIM, a Perceptual Loss (shown in Figure \ref{fig:exp_cond_metrics_grid}a), FID, and CLIP score. The training loss was also monitored.
+A hiperparameter tuning was performed by training separate models with various combinations of conditioning strength parameters. These experiments were conducted on a 5,000-sample subset of the ObjaverseXL dataset. The $img\_ref\_scale$ values tested were \{0.1, 0.25, 0.5, 0.75, 1.0\} and $cam\_mod\_strength$ values tested were \{0.1, 0.25, 0.5, 0.75, 1.0\}. Performance during these validation runs was evaluated using PSNR, SSIM, Perceptual Loss, FID, and CLIP score. The training loss was also monitored.
 
 \textbf{Results and Discussion}:
 The impact of varying conditioning strengths on different evaluation metrics is presented below. The Fréchet Inception Distance (FID) is a key metric for assessing the quality of generated images.
@@ -302,7 +302,7 @@ All models were trained for a comparable number of effective updates relative to
 
   \item \textbf{5,000 Samples}: Scaling up to 5,000 samples showed notable improvements across all metrics. CLIP scores improved to approximately $0.78-0.79$, SSIM values increased to around $0.92$, FID scores decreased to approximately $60$, and perceptual loss reduced to around $4.2$. This demonstrates that increased data diversity enhances the model's understanding of 3D object appearance and geometry.
 
-  \item \textbf{20,000 Samples}: The largest dataset configuration achieved the best performance across all metrics. CLIP scores reached the highest values of approximately $0.79$, SSIM peaked at around $0.93$, FID achieved the lowest scores of approximately $50$, and perceptual loss reached the minimum values of around $3.7$. This configuration also demonstrated the most stable training dynamics, as evidenced by the smoother convergence curves.
+  \item \textbf{20,000 Samples}: The largest dataset configuration achieved the best performance across all metrics. CLIP scores reached the highest values of approximately $0.79$, SSIM peaked at around $0.93$, FID achieved the lowest scores of approximately $45$, and perceptual loss reached the minimum values of around $3.7$. This configuration also demonstrated the most stable training dynamics, as evidenced by the smoother convergence curves.
 \end{itemize}
 
 \textbf{Training Dynamics and Convergence}:
@@ -320,7 +320,7 @@ The consistent improvement across all metrics with increased training data size 
   \item \textbf{Distribution Matching}: The reduction in FID scores with larger datasets suggests that the model better captures the statistical properties of real image distributions when provided with more diverse training examples.
 \end{itemize}
 
-These findings strongly support the importance of large-scale training data for robust diffusion-based novel view synthesis and suggest that further scaling beyond 20,000 samples could yield additional performance improvements. The 20,000-sample configuration was selected as the baseline for subsequent experiments and final model evaluation.
+These findings strongly support the importance of large-scale training data for robust diffusion-based novel view synthesis and suggest that further scaling beyond 20,000 samples could yield additional performance improvements. However, even the largest configuration tested (20,000 samples) remains substantially smaller than state-of-the-art methods like Zero123++, which utilized $800K+$ 3D models - indicating that the observed performance limitations may be fundamentally constrained by data scale rather than architectural choices. The 20,000-sample configuration was selected as the baseline for subsequent experiments and final model evaluation within the available computational constraints.
 
 \section{Comparison with State-of-the-Art Methods on GSO Dataset}\label{sec:exp_gso_quantitative_sota}
 
@@ -340,7 +340,7 @@ All models were trained using the adapter-based approach with optimal hyperparam
 The evaluation protocol followed a standardized procedure where each model received a source view and the corresponding camera transformation parameters to synthesize a target novel view. The generated images were then quantitatively compared against ground truth target views using the established evaluation metrics. All assessments were conducted on a held-out test set comprising 100 carefully selected samples from the GSO dataset, ensuring no overlap with training data and providing a robust benchmark for cross-dataset generalization capabilities.
 
 \subsection{Comparison with State-of-the-Art Methods}\label{ssec:exp_sota_comparison}
-The performance of the proposed method is compared against two contemporary novel view synthesis techniques: Zero123++ and MVAdapter. The results, evaluated on 100 samples from the GSO dataset with aligned camera angles and consistent conditioning (reference image and text prompt), are presented in Table \ref{tab:sota_comparison_gso}.
+The performance of the proposed method is compared against two contemporary novel view synthesis techniques: Zero123++ and MVAdapter. The results, evaluated on 100 samples from the GSO dataset with aligned camera angles and consistent conditioning (reference image and text prompt), are presented in Table \ref{tab:sota_comparison_gso}. The comparison reveals significant performance gaps, with the proposed method underperforming established approaches across key metrics. Notably, these performance differences must be contextualized by the substantial disparity in training data scale: Zero123++ was trained on 800K+ Objaverse models with approximately 10M rendered images, while the proposed method used only 20,000 models - representing a 40$\times$ difference in 3D model diversity and likely 100$\times$ difference in training images. This fundamental difference in data scale significantly impacts generalization capabilities to unseen objects.
 
 \begin{table}[htbp]
   \centering
@@ -350,15 +350,14 @@ The performance of the proposed method is compared against two contemporary nove
     \toprule
     \textbf{Method} & \textbf{PSNR} $\uparrow$ & \textbf{SSIM} $\uparrow$ & \textbf{LPIPS} $\downarrow$ \\
     \midrule
-    Zero123++ \cite{zero1to3} & 19.27 & 0.84 & 0.12 \\
+    Zero123++ \cite{zero1to3} & \textbf{19.27} & \textbf{0.84} & \textbf{0.12} \\
     MVAdapter \cite{mvadapter} & 11.48 & 0.78 & 0.16 \\
     Proposed Method (1k samples, 10 epochs) & 10.12 & 0.76 & 0.24 \\
     Proposed Method (5k samples, 10 epochs) & 13.12 & 0.81 & 0.20 \\
-    Proposed Method (20k samples, 10 epochs) & 13.48 & 0.82 & 0.18 \\
+    Proposed Method (20k samples, 10 epochs) & \textit{13.48} & \textit{0.82} & \textit{0.18} \\
     \bottomrule
   \end{tabular}
 \end{table}
-
 
 \subsection{Inference Time Analysis}\label{ssec:exp_inference_time}
 \textbf{Objective}: To quantify the computational efficiency of the proposed model during the inference phase (novel view generation).
@@ -391,6 +390,92 @@ The results will be compared to the inference time of other state-of-the-art met
 
 \textbf{Results and Discussion}: The proposed adapter-based model achieves an average inference time of 16.04 seconds per $768 \times 768$ image on an NVIDIA A100 GPU, using 20 denoising steps. This suggests that the proposed model is able to generate novel views in comparable time to the MVAdapter method. The Zero123++ method is still significantly faster, with an average inference time of 6.51 seconds.
 
+\section{Qualitative Results}\label{sec:exp_qualitative_results}
+
+This section presents visual examples of novel view synthesis results generated by the proposed method on the GSO test dataset. Each comparison image shows three views arranged side by side: the source (reference) image on the left, the ground truth target view in the middle, and the synthesized novel view generated by the proposed method on the right. The selected samples demonstrate the method's performance across various object categories, geometric complexities, and viewpoint transformations present in the GSO dataset.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth, trim=0 0 0 20pt, clip]{images/experiments/samples/comparison_batch0124_uid_bc4b4d44-cc3c-5d75-a82f-0c1e4c4a47f9.png}
+  \caption{Sample 1: The generated human figure maintains the basic pose and structure but lacks fine anatomical details.}
+  \label{fig:sample_1}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth, trim=0 0 0 20pt, clip]{images/experiments/samples/comparison_batch0014_uid_e0a99775-e85f-5dde-89fb-58b9e21b2d0b.png}
+  \caption{Sample 2: The spacecraft model shows reasonable overall shape preservation but exhibits color shifts and reduced detail fidelity in the generated view.}
+  \label{fig:sample_2}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth, trim=0 0 0 20pt, clip]{images/experiments/samples/comparison_batch0016_uid_eea36014-cd41-58af-8b4d-126448a7661f.png}
+  \caption{Sample 3: The chair synthesis demonstrates good structural understanding but suffers from texture and structural degradation.}
+  \label{fig:sample_3}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth, trim=0 0 0 20pt, clip]{images/experiments/samples/comparison_batch0042_uid_2793d559-3f34-5cce-97e2-b708208e3661.png}
+  \caption{Sample 4: The satellite 3D reconstruction model generation captures the basic geometric layout but produces notable artifacts in textural information and color.}
+  \label{fig:sample_4}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth, trim=0 0 0 20pt, clip]{images/experiments/samples/comparison_batch0091_uid_a0a08413-ce59-574a-bf85-b87f8df6bde3.png}
+  \caption{Sample 5: The humanoid robot figure maintains correct proportions and pose but shows reduced detail sharpness and some color inconsistencies.}
+  \label{fig:sample_5}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth, trim=0 0 0 20pt, clip]{images/experiments/samples/comparison_batch0012_uid_75d5f734-a64e-576b-a0c3-faf3f8dfdf08.png}
+  \caption{Sample 6: The sewing machine synthesis successfully preserves the overall structure and major components but lacks the crisp detail definition of the target view and includes a logo on the bottom right side.}
+  \label{fig:sample_6}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth, trim=0 0 0 20pt, clip]{images/experiments/samples/comparison_batch0000_uid_98b2449b-8234-58d7-bacc-1a80cb2db00a.png}
+  \caption{Sample 7: The wooden deck structure shows acceptable geometric consistency but exhibits noticeable texture blurring and reduced material realism.}
+  \label{fig:sample_7}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth, trim=0 0 0 20pt, clip]{images/experiments/samples/comparison_batch0048_uid_6e1d36c3-c5d0-588b-8919-f0ae9b96b97a.png}
+  \caption{Sample 8: The construction framework scene is too complex for the model, the generated view shows significant detail loss and simplified material representation.}
+  \label{fig:sample_8}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth, trim=0 0 0 20pt, clip]{images/experiments/samples/comparison_batch0118_uid_a60ba306-6517-5367-8858-ca3d9d113b1e.png}
+  \caption{Sample 9: The pineapple synthesis captures the basic shape and positioning but exhibits reduced color vibrancy and simplified surface texture patterns.}
+  \label{fig:sample_9}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth, trim=0 0 0 20pt, clip]{images/experiments/samples/comparison_batch0153_uid_b8198c64-8ed6-54cb-bd39-63a5720b9453.png}
+  \caption{Sample 10: The house structure shows reasonable architectural preservation but displays noticeable loss of fine architectural details and color.}
+  \label{fig:sample_10}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth, trim=0 0 0 20pt, clip]{images/experiments/samples/comparison_batch0156_uid_5312cb2b-e4b2-5dca-8f60-31744714fb94.png}
+  \caption{Sample 11: The Earth globe generation maintains spherical shape and continental outlines but shows reduced color saturation and simplified surface features.}
+  \label{fig:sample_11}
+\end{figure}
+
+\newpage
+The qualitative results reveal several consistent patterns in the model's performance limitations. While the proposed method demonstrates a fundamental understanding of 3D geometry and can generate plausible novel views that preserve basic object structure and pose, the generated images consistently suffer from reduced visual fidelity compared to ground truth targets. Common issues include: (1) texture degradation and loss of fine surface details, (2) color desaturation and shifts that reduce material realism, (3) overall blurriness that diminishes image sharpness, and (4) simplified representations of complex geometric features.
+
+The model shows particular strength in maintaining overall object proportions and spatial relationships, indicating successful camera conditioning, but struggles with high-frequency details and photorealistic texture synthesis. These visual limitations align closely with the quantitative metrics, where lower PSNR and SSIM scores reflect the reduced pixel-level accuracy and structural preservation, while higher perceptual loss values indicate the model's difficulty in capturing perceptually important visual features that distinguish high-quality novel view synthesis.
+
 \section{Chapter Summary}\label{sec:exp_summary}
 This chapter detailed the comprehensive experimental evaluation of the proposed multi-view novel view synthesis method. The experimental setup, including datasets (ObjaverseXL for training, GSO for testing) and evaluation metrics (PSNR, SSIM, LPIPS, FID, CLIP score), was established.
 
@@ -402,6 +487,6 @@ Key findings from the experiments include:
   \item \textbf{Impact of Data Scale}: Increasing the training data size (Section \ref{ssec:exp_data_scale}) generally led to improved performance and generalization on the GSO dataset, underscoring the importance of large-scale diverse data for training robust NVS models.
 \end{itemize}
 
-Quantitative evaluation on the GSO dataset (Section \ref{sec:exp_gso_quantitative_sota}) positioned the proposed method relative to SOTA approaches like Zero123++ and MVAdapter, showing that the proposed method is able to achieve a comparable performance to the state-of-the-art methods.
+Quantitative evaluation on the GSO dataset (Section \ref{sec:exp_gso_quantitative_sota}) revealed substantial performance gaps compared to SOTA approaches like Zero123++ and MVAdapter. The proposed method achieves PSNR scores approximately $30\%$ lower than Zero123++, indicating significant room for improvement in reconstruction quality. The FID score of 45, while improved from smaller training datasets, remains considerably high for image generation tasks and suggests that further training is needed to improve the quality of the generated images.
 
-Overall, the experiments validate the architectural design choices and training strategies employed in this thesis, demonstrating a capable and efficient approach to diffusion-based novel view synthesis. Identified limitations and observations from these experiments also pave the way for potential future work, such as further exploration of more sophisticated camera encoders, or training on even larger and more diverse datasets to push generalization boundaries.
+While the experiments provide insights into architectural design choices and training strategies, the results highlight the challenges in achieving competitive performance for diffusion-based novel view synthesis within resource constraints. The significant underperformance compared to established methods can be largely attributed to the substantial difference in training data scale - Zero123++ leveraged $40\times$ more 3D models and approximately $100\times$ more training images than the proposed method. This disparity fundamentally limits the model's ability to generalize across diverse object types and geometric configurations, as evidenced by the performance gaps on the GSO dataset. Future work must address these limitations either through access to larger-scale training data, more sophisticated architectures that can better leverage limited data, or hybrid approaches that combine the demonstrated efficiency benefits with improved synthesis capabilities.

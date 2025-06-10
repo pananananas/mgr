@@ -81,7 +81,7 @@ Figure \ref{fig:my-method-diagram} illustrates the overall architecture of the p
   \item \textbf{Efficiency}: Adapter-based training that keeps the backbone model frozen
 \end{itemize}
 
-\section{Architectural Framework}\label{sec:architectural-framework}
+\section{Architecture}\label{sec:architectural-framework}
 In my method I leverage the strong generative capabilities of a pre-trained 2D diffusion model and extend it for 3D-aware novel view synthesis. This is achieved through the introduction of specialized conditioning modules that inject visual and geometric information into the denoising U-Net.
 
 \subsection{Backbone: Stable Diffusion 2.1}
@@ -156,7 +156,7 @@ The $\text{MultiViewUNet}$ module serves as the central component of the propose
 
 During each step of the reverse diffusion process, the $\text{MultiViewUNet}$ takes the noisy latent representation of the target image, the current timestep, text embeddings, the extracted reference image features, and the encoded target camera parameters. It then predicts the noise present in the noisy latent. The system diagram in Figure \ref{fig:my-method-diagram} provides a visual summary of this integrated data flow.
 
-\section{Model Training}
+\section{Model Training and Inference}
 The training process is designed to teach the $\text{MultiViewUNet}$ to effectively utilize the visual and geometric conditioning information to predict the noise required to generate a target view from a source view and camera transformation.
 
 \subsection{Training Objective and Loss Functions}
@@ -183,10 +183,11 @@ The trainable parameters of the model include the weights of the modules mention
 
 Optimization is performed using the AdamW optimizer \cite{adamw} with a learning rate of $1 \times 10^{-5}$. A cosine learning rate schedule with a warm-up period is employed to manage the learning rate dynamics over the training duration, which is set for a total of $25$ epochs. Gradient clipping with a maximum norm of $1.0$ is applied to prevent exploding gradients. Training is performed using a batch size of $6$ per GPU. The model is trained on 4 GPUs (NVIDIA A100 40GB). The model is implemented using PyTorch and PyTorch Lightning, and mixed-precision training (using $\text{float32}$) is leveraged for efficiency.
 
-\section{Inference Process}
+\subsection{Inference Process}
 Once trained, the model can be used to synthesize a novel view of an object from a given source image and a specified target camera pose.
 
-\subsection{Novel View Synthesis Pipeline}
+\textbf{Novel View Synthesis Pipeline}:
+
 The inference process, managed by the $\text{MVDPipeline}$, proceeds as follows:
 \begin{enumerate}
   \item \textbf{Inputs}: The pipeline takes a single source image, the desired target camera parameters, and an optional text prompt.

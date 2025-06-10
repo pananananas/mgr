@@ -6,26 +6,26 @@ Novel view synthesis from single images remains one of computer vision's most ch
 
 Current approaches suffer from critical limitations. Methods like Zero-1-to-3 \cite{zero1to3} use simple pose vectors that provide insufficient geometric detail for complex viewpoint changes. Advanced techniques like CAT3D \cite{cat3d} and MV-Adapter \cite{mvadapter} rely on complex raymap representations that are likely to introduce visual artifacts and struggle with reflective materials. Meanwhile, most of the existing methods require full fine-tuning large diffusion models which is computationally prohibitive.
 
-This work addresses a fundamental question: \textit{Can we achieve effective 3D conditioning in diffusion models while maintaining computational efficiency and visual quality?}
+% This work addresses a fundamental question: \textit{Can we achieve effective 3D conditioning in diffusion models while maintaining computational efficiency and visual quality?}
 
 \section{Contributions}
 
-In this work, I introduce a novel approach that combines Feature-wise Linear Modulation (FiLM) for camera parameter conditioning with parallel image cross-attention adapters for visual conditioning. My key contributions are:
+In this work, I introduce a novel approach that combines Feature-wise Linear Modulation (FiLM) \cite{film} for camera parameter conditioning with parallel image cross-attention adapters for visual conditioning. My key contributions are:
 
 \begin{enumerate}
-  \item \textbf{FiLM-based camera conditioning}: First application of FiLM to camera parameter encoding in diffusion models, providing direct geometric control without visual artifacts.
   \item \textbf{Hybrid conditioning architecture}: A dual-stream approach combining global geometric modulation with selective visual attention, addressing fundamental trade-offs in novel view synthesis.
   \item \textbf{Efficient adapter training}: Training only $585M$ of $2.9B$ parameters (20\%) while achieving comparable performance to full fine-tuning, with $4\times$ faster training.
+  \item \textbf{Feature-wise modulation for camera conditioning}: First application of FiLM to camera parameter conditioning on diffusion models, providing direct geometric control.
   \item \textbf{Systematic evaluation}: Comprehensive ablation studies and comparison with state-of-the-art methods, demonstrating effectiveness across metrics and datasets.
 \end{enumerate}
 
-Proposed method achieves competitive results with Zero123++ \cite{zero1to3} and MVAdapter \cite{mvadapter} while requiring significantly fewer computational resources and producing fewer visual artifacts.
+The proposed method demonstrates significant computational efficiency gains compared to Zero123++ \cite{zero1to3} and MVAdapter \cite{mvadapter}, though with performance limitations due to constrained training data scale.
 
 \section{Research Questions}
 
 This work addresses four specific research questions:
 \begin{itemize}
-  \item Can Feature-wise Linear Modulation (FiLM) provide an effective alternative to complex raymap representations for camera parameter encoding?
+  \item Can Feature-wise Linear Modulation provide an effective alternative to complex raymap representations for camera parameter encoding?
   \item Can a hybrid conditioning strategy combining visual and geometric information achieve superior results compared to existing single-modal approaches?
   \item What is the optimal balance between training efficiency and model expressiveness in adapter-based approaches for novel view synthesis?
   \item How can we effectively condition the diffusion process to generate novel views of objects from a single reference image?
