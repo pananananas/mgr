@@ -11,16 +11,15 @@ Before examining generative approaches to novel view synthesis, it is essential 
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.9\textwidth]{images/related-work/COLMAP.png}
-  \caption{COLMAP pipeline}
+  \caption{COLMAP pipeline (Source:\cite{colmap_figure})}
   \label{fig:colmap-pipeline}
-  % https://colmap.github.io/tutorial.html
 \end{figure}
 Structure from Motion (SfM) represents the classical approach to 3D reconstruction from images. Methods like COLMAP \cite{colmap} demonstrate remarkable success in reconstructing 3D scenes from dense image collections through a two-stage pipeline \ref{fig:colmap-pipeline}: correspondence search to identify and match features across images, followed by incremental reconstruction to estimate camera poses and triangulate 3D points.
 
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.7\textwidth]{images/related-work/feature-matching.jpg}
-  \caption{Feature matching across multiple views - a fundamental requirement for traditional SfM approaches}
+  \caption{Feature matching across multiple views - a fundamental requirement for traditional SfM approaches (Source:\cite{image_matching})}
   \label{fig:matching-features}
   % https://blog.roboflow.com/image-matching/
 \end{figure}
@@ -50,7 +49,7 @@ Modern 3D generation pipelines, such as InstantMesh \cite{instantmesh}, exemplif
 \begin{figure}[h]
   \centering
   \includegraphics[width=\textwidth]{images/related-work/instantmesh.png}
-  \caption{InstantMesh pipeline showing novel view synthesis as the foundation for 3D reconstruction}
+  \caption{InstantMesh pipeline showing novel view synthesis as the foundation for 3D reconstruction (Source:\cite{instantmesh})}
   \label{fig:instantmesh}
 \end{figure}
 
@@ -78,7 +77,7 @@ The \textbf{reverse process} aims to learn to reverse this noising. Starting fro
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.8\textwidth]{images/related-work/diffusion-process.png}
-  \caption{The forward (noising) and reverse (denoising/generation) stages of a diffusion model. The forward process gradually adds noise to an image until it becomes pure noise. The reverse process learned by a neural net to denoise, step-by-step, to generate an image from noise.}
+  \caption{The forward (noising) and reverse (denoising/generation) stages of a diffusion model. The forward process gradually adds noise to an image until it becomes pure noise. The reverse process learned by a neural net to denoise, step-by-step, to generate an image from noise. (Source:\cite{diffusion_process})}
   \label{fig:diffusion-process}
 \end{figure}
 
@@ -104,7 +103,7 @@ LDMs employ a pre-trained autoencoder, typically a VAE. The VAE's encoder first 
 \begin{figure}[h]
   \centering
   \includegraphics[width=\textwidth]{images/related-work/LDM-detailed.png}
-  \caption{Architecture of a Latent Diffusion Model (LDM). An image is first encoded into a latent space by a VAE encoder. The diffusion process (noising and denoising via U-Net) occurs in this latent space. The generated latent is then decoded back to pixel space by the VAE decoder. Conditioning, such as text embeddings from CLIP, is incorporated into the U-Net.}
+  \caption{Architecture of a Latent Diffusion Model (LDM). An image is first encoded into a latent space by a VAE encoder. The diffusion process (noising and denoising via U-Net) occurs in this latent space. The generated latent is then decoded back to pixel space by the VAE decoder. Conditioning, such as text embeddings from CLIP, is incorporated into the U-Net. (Source:\cite{diffusion_process})}
   \label{fig:ldm-architecture}
 \end{figure}
 
@@ -123,7 +122,7 @@ ControlNet \cite{controlnet} introduces a method to add diverse spatial conditio
 \begin{figure}[ht]
   \centering
   \includegraphics[width=0.4\textwidth]{images/related-work/controlnet.png}
-  \caption{Conceptual overview of ControlNet, showing how an additional control module processes an input condition (e.g., edges, pose) and injects guidance into a pre-trained diffusion model. (Adapted from Zhang et al. \cite{controlnet})}
+  \caption{Conceptual overview of ControlNet, showing how an additional control module processes an input condition (e.g., edges, pose) and injects guidance into a pre-trained diffusion model. (Adapted from Zhang et al. \cite{controlnet}) (Source:\cite{controlnet_figure})}
   \label{fig:controlnet-overview}
 \end{figure}
 
@@ -133,7 +132,7 @@ IP-Adapter (Image Prompt Adapter) \cite{ipadapter} offers an effective way to co
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.7\textwidth]{images/related-work/ipadapter.png}
-  \caption{Conceptual illustration of the IP-Adapter architecture, showing how image features extracted by an image encoder are integrated into the U-Net via dedicated cross-attention layers to guide the generation process. (Image based on the IP-Adapter concept)}
+  \caption{Conceptual illustration of the IP-Adapter architecture, showing how image features extracted by an image encoder are integrated into the U-Net via dedicated cross-attention layers to guide the generation process. (Image based on the IP-Adapter concept) (Source:\cite{ipadapter})}
   \label{fig:ipadapter-concept}
 \end{figure}
 
@@ -146,7 +145,7 @@ Feature-wise Linear Modulation (FiLM) \cite{film} is a general and effective tec
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.5\textwidth]{images/related-work/film.png}
-  \caption{The Feature-wise Linear Modulation (FiLM) layer. A conditioning input is processed by a FiLM generator to produce scale ($\gamma$) and shift ($\beta$) parameters, which then modulate the feature maps ($h$) of a main network. (Adapted from Perez et al. \cite{film})}
+  \caption{The Feature-wise Linear Modulation (FiLM) layer. A conditioning input is processed by a FiLM generator to produce scale ($\gamma$) and shift ($\beta$) parameters, which then modulate the feature maps ($h$) of a main network. (Adapted from Perez et al. \cite{film}) (Source:\cite{film})}
   \label{fig:film-layer}
 \end{figure}
 
@@ -160,7 +159,7 @@ The core idea was to make the U-Net's segmentation process adaptable and more in
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.7\textwidth]{images/related-work/filmed-unet.png}
-  \caption{Conceptual diagram of a FiLMed-UNet. The metadata about patients are processed by a FiLM generator network, which outputs scale and shift parameters to modulate activations at various layers within the U-Net architecture, making the denoising process viewpoint-aware.}
+  \caption{Conceptual diagram of a FiLMed-UNet. The metadata about patients are processed by a FiLM generator network, which outputs scale and shift parameters to modulate activations at various layers within the U-Net architecture, making the denoising process viewpoint-aware. (Source:\cite{filmed_unet})}
   \label{fig:filmed-unet-concept}
 
 \end{figure}
