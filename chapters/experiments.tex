@@ -41,7 +41,7 @@ To quantitatively test the performance of the novel view synthesis, the followin
 The proposed model, unless specified differently for a particular experiment, is trained using the following configuration:
 \begin{itemize}
   \item \textbf{Base Model Architecture}: Stable Diffusion 2.1, with the VAE and text encoder frozen. The U-Net is modified with the proposed image cross-attention adapters and FiLM layers for camera conditioning.
-  \item \textbf{Trainable Parameters}: Only the newly introduced adapter layers, the $ImageEncoder$'s non-U-Net parts (if any beyond feature extraction), and the $CameraEncoder$ MLP and FiLM generator layers are trained. The original Stable Diffusion U-Net weights (when used for feature extraction in $ImageEncoder$ or as the backbone for the $MultiViewUNet$) remain frozen unless part of a full fine-tuning experiment.
+  \item \textbf{Trainable Parameters}: Only the newly introduced adapter layers, the image encoder's non-U-Net parts (if any beyond feature extraction), and the camera encoder MLP and FiLM generator layers are trained. The original Stable Diffusion U-Net weights (when used for feature extraction in the image encoder or as the backbone for the Multi-View U-Net) remain frozen unless part of a full fine-tuning experiment.
   \item \textbf{Optimizer}: AdamW \cite{adamw}.
   \item \textbf{Learning Rate}: $1 \times 10^{-5}$.
   \item \textbf{Learning Rate Schedule}: Cosine annealing with a warm-up period of 500 steps.
@@ -49,7 +49,7 @@ The proposed model, unless specified differently for a particular experiment, is
   \item \textbf{Hardware}: 4 x NVIDIA A100 40GB GPUs.
   \item \textbf{Training Duration}: Typically 10 epochs for the 20k ObjaverseXL dataset, or a proportionally scaled number of steps for smaller datasets/experiments.
   \item \textbf{Image Resolution}: Input and output images are $768 \times 768$ pixels.
-  \item \textbf{Default Conditioning Strengths}: $img\_ref\_scale$, $cam\_mod\_strength$.
+  \item \textbf{Default Conditioning Strengths}: reference image influence strength = 1.0, camera conditioning strength = 1.0.
   \item \textbf{Loss Function}: MSE loss with Min-SNR weighting strategy ($\gamma=5.0$).
   \item \textbf{Classifier-Free Guidance (CFG) Scale (Inference)}: 1.0.
   \item \textbf{Inference Steps}: 20 steps using a DDPMScheduler.
@@ -62,21 +62,21 @@ This section presents a series of experiments designed to dissect the proposed a
 \subsection{E1: Impact of Conditioning Strengths (img-ref-scale and cam-mod-strength)}\label{ssec:exp_conditioning_strengths}
 
 \textbf{Objective}:
-To determine the optimal operating range and sensitivity of the model to the $img\_ref\_scale$ (controlling influence of reference image features) and $cam\_mod\_strength$ (controlling influence of camera FiLM modulation) hyperparameters.
+To determine the optimal operating range and sensitivity of the model to two critical hyperparameters: the reference image influence strength (controlling how much the source view features affect generation) and the camera conditioning strength (controlling how much the target camera pose influences the synthesis process).
 
 \textbf{Methodology}:
-A hiperparameter tuning was performed by training separate models with various combinations of conditioning strength parameters. These experiments were conducted on a 5,000-sample subset of the ObjaverseXL dataset. The $img\_ref\_scale$ values tested were \{0.1, 0.25, 0.5, 0.75, 1.0\} and $cam\_mod\_strength$ values tested were \{0.1, 0.25, 0.5, 0.75, 1.0\}. Performance during these validation runs was evaluated using PSNR, SSIM, Perceptual Loss, FID, and CLIP score. The training loss was also monitored.
+A hyperparameter tuning was performed by training separate models with various combinations of conditioning strength parameters. These experiments were conducted on a 5,000-sample subset of the ObjaverseXL dataset. The reference image influence strength values tested were \{0.1, 0.25, 0.5, 0.75, 1.0\} and camera conditioning strength values tested were \{0.1, 0.25, 0.5, 0.75, 1.0\}. Performance during these validation runs was evaluated using PSNR, SSIM, Perceptual Loss, FID, and CLIP score. The training loss was also monitored.
 
 \textbf{Results and Discussion}:
 The impact of varying conditioning strengths on different evaluation metrics is presented below. The Fréchet Inception Distance (FID) is a key metric for assessing the quality of generated images.
 Figure \ref{fig:exp_cond_metrics_grid} shows the effect of conditioning strengths on Perceptual Loss, SSIM, CLIP score, and FID.
 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.75\textwidth]{images/experiments/cam_img/train_loss.png}
-  \caption{E1: Training MSE noise loss.}
-  \label{fig:exp_cond_fid}
-\end{figure}
+% \begin{figure}[htbp]
+%   \centering
+%   \includegraphics[width=0.75\textwidth]{images/experiments/cam_img/train_loss.png}
+%   \caption{E1: Training MSE noise loss.}
+%   \label{fig:exp_cond_fid}
+% \end{figure}
 
 \begin{figure}[htbp]
   \centering
@@ -108,22 +108,45 @@ Figure \ref{fig:exp_cond_metrics_grid} shows the effect of conditioning strength
   \label{fig:exp_cond_metrics_grid}
 \end{figure}
 
-Impact of Camera Modulation Strength:
+The experimental results reveal several key insights about the optimal balance between reference image influence and camera conditioning strength, as summarized in Table \ref{tab:conditioning_strengths_results}.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Performance comparison of different conditioning strength combinations on key evaluation metrics.}
+  \label{tab:conditioning_strengths_results}
+  \begin{tabular}{cccccc}
+    \toprule
+    \textbf{\makecell{Camera\\Strength}} & \textbf{\makecell{Image\\Strength}} & \textbf{FID} $\downarrow$ & \textbf{CLIP} $\uparrow$ & \textbf{SSIM} $\uparrow$ & \textbf{Category} \\
+    \midrule
+    0.1 & 0.1--1.0 & 175 & 0.69 & 0.88 & Poor \\
+    0.25 & 0.1--1.0 & 135 & 0.71 & 0.90 & Below Average \\
+    \midrule
+    0.5 & 0.25 & 57 & 0.76 & 0.91 & Good \\
+    0.75 & 0.25 & 55 & 0.76 & 0.91 & Good \\
+    1.0 & 0.25 & 54 & 0.77 & 0.90 & Good \\
+    \midrule
+    0.5 & 1.0 & 62 & 0.79 & 0.93 & Good \\
+    0.75 & 1.0 & 61 & 0.79 & 0.93 & Good \\
+    1.0 & 1.0 & 61 & 0.79 & 0.93 & \textbf{Best Overall} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Impact of Camera Conditioning Strength:
 \begin{itemize}
-  \item Low Camera Strength: Consistently, low $cam\_mod\_strength$ values, particularly $0.1$, resulted in markedly inferior performance. These configurations exhibited the highest (worst) FID scores, generally above $170$, and the lowest (worst) CLIP scores, around $0.68-0.69$, as well as the lowest SSIM values, around $0.88$. This indicates that with weak camera conditioning, the model struggles to accurately interpret and apply the target view geometry, leading to poor synthesis quality and geometric inaccuracies.
-  \item A $cam\_mod\_strength$ of $0.25$ showed an improvement over $0.1$ but still significantly underperformed compared to stronger camera conditioning.
-  \item High Camera Strength: Increasing $cam\_mod\_strength$ to $0.5$, $0.75$, or $1.0$ generally led to substantial improvements across FID, CLIP, and SSIM.
+  \item \textbf{Weak Camera Conditioning}: Consistently, low camera conditioning strength values, particularly 0.1, resulted in markedly inferior performance. These configurations exhibited the highest (worst) FID scores, generally above 170, and the lowest (worst) CLIP scores, around 0.68-0.69, as well as the lowest SSIM values, around 0.88. This indicates that with weak camera conditioning, the model struggles to accurately interpret and apply the target view geometry, leading to poor synthesis quality and geometric inaccuracies.
+  \item A camera conditioning strength of 0.25 showed an improvement over 0.1 but still significantly underperformed compared to stronger camera conditioning.
+  \item \textbf{Strong Camera Conditioning}: Increasing camera conditioning strength to 0.5, 0.75, or 1.0 generally led to substantial improvements across FID, CLIP, and SSIM metrics.
 \end{itemize}
 
-Impact of Reference Image Conditioning Strength:
+Impact of Reference Image Influence Strength:
 \begin{itemize}
-  \item Low Image Reference Strength: An $img\_ref\_scale$ of $0.1$, when paired with low to moderate $cam\_mod\_strength$, generally resulted in poorer FID, CLIP, and SSIM scores compared to higher $img\_ref\_scale$ values. This suggests that some degree of visual information from the source view is beneficial for guiding the synthesis process.
-  \item Moderate Image Reference Strength: An $img\_ref\_scale$ of $0.25$ emerged as a particularly effective value, especially for optimizing FID. When combined with adequate $cam\_mod\_strength$ ($0.5$ or higher), configurations such as $cam=0.75 img=0.25$, $cam=1.0 img=0.25$ and $cam=0.5 img=0.25$ consistently achieved among the lowest FID scores (around 50-60). These combinations also yielded strong CLIP scores (approx. 0.76-0.78) and SSIM values (approx. 0.91-0.925).
-  \item High Image Reference Strength: An $img\_ref\_scale$ of 1.0, when paired with high $cam\_mod\_strength$, also demonstrated top-tier performance, particularly excelling in CLIP score (reaching up to $\approx 0.79$) and SSIM (reaching up to $\approx 0.93$). However, these configurations sometimes resulted in slightly higher (worse) FID scores compared to their $img\_ref\_scale=0.25$ counterparts with similar high $cam\_mod\_strength$. This might suggest that while a strong reference image signal can enhance perceptual similarity and structural details (benefiting CLIP and SSIM), it might slightly constrain the model's ability to generate the most statistically faithful novel view if it adheres too closely to the source image features.
+  \item \textbf{Low Reference Image Influence}: A reference image influence strength of 0.1, when paired with low to moderate camera conditioning strength, generally resulted in poorer FID, CLIP, and SSIM scores compared to higher reference image influence values. This suggests that some degree of visual information from the source view is beneficial for guiding the synthesis process.
+  \item \textbf{Moderate Reference Image Influence}: A reference image influence strength of 0.25 emerged as particularly effective for optimizing FID scores. When combined with adequate camera conditioning strength (0.5 or higher), these configurations consistently achieved among the lowest FID scores (around 50-60). These combinations also yielded strong CLIP scores (approximately 0.76-0.78) and SSIM values (approximately 0.91-0.925).
+  \item \textbf{High Reference Image Influence}: A reference image influence strength of 1.0, when paired with high camera conditioning strength, also demonstrated top-tier performance, particularly excelling in CLIP score (reaching up to approximately 0.79) and SSIM (reaching up to approximately 0.93). However, these configurations sometimes resulted in slightly higher (worse) FID scores compared to their moderate reference image influence counterparts with similar high camera conditioning strength. This might suggest that while a strong reference image signal can enhance perceptual similarity and structural details (benefiting CLIP and SSIM), it might slightly constrain the model's ability to generate the most statistically faithful novel view if it adheres too closely to the source image features.
 \end{itemize}
 
-This hyperparameter sweep demonstrates that the model is sensitive to both $cam\_mod\_strength$ and $img\_ref\_scale$. For the most robust novel view synthesis, a $cam\_mod\_strength$ of at least $0.5$ is recommended, with $0.75$ or $1.0$ often yielding the best results. For $img\_ref\_scale$, a value of $0.25$ provides an excellent balance, particularly for FID, while $img\_ref\_scale=1.0$ can also be highly effective, especially for maximizing CLIP and SSIM scores when paired with strong camera conditioning.
-In the future experiments, the parameters were set to $img\_ref\_scale=0.75$ and $cam\_mod\_strength=1.0$.
+This hyperparameter sweep demonstrates that the model is sensitive to both camera conditioning strength and reference image influence strength. For the most robust novel view synthesis, a camera conditioning strength of at least 0.5 is recommended, with 0.75 or 1.0 often yielding the best results. For reference image influence strength, a value of 0.25 provides an excellent balance, particularly for FID optimization, while a strength of 1.0 can also be highly effective, especially for maximizing CLIP and SSIM scores when paired with strong camera conditioning.
 
 \subsection{E2: Training Strategy: Adapters vs. Full Fine-tuning}\label{ssec:exp_adapters_vs_full_finetuning}
 \textbf{Objective}:
@@ -172,28 +195,52 @@ The second approach involved fine-tuning the entire U-Net along with the adapter
 \end{figure}
 
 \textbf{Results and Discussion}:
+The comparison between adapter-only training and full fine-tuning reveals significant differences in computational efficiency while maintaining comparable performance, as summarized in Table \ref{tab:adapter_vs_full_results}.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Comparison of adapter-only training vs. full fine-tuning approaches.}
+  \label{tab:adapter_vs_full_results}
+  \begin{tabular}{lcc}
+    \toprule
+    \textbf{Metric} & \textbf{Adapter Only} & \textbf{Full Fine-tuning} \\
+    \midrule
+    Trainable Parameters & 585M & 2.3B \\
+    Batch Size (per GPU) & 6 & 2 \\
+    Training Time (10 epochs) & 9 hours & 35 hours \\
+    \midrule
+    CLIP Score $\uparrow$ & 0.78 & 0.78 \\
+    SSIM $\uparrow$ & 0.92 & 0.92 \\
+    FID $\downarrow$ & 58 & 56 \\
+    Perceptual Loss $\downarrow$ & 4.1 & 3.9 \\
+    \midrule
+    \textbf{Efficiency} & \textbf{High} & Low \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
 Training the adapter only was possible with batch size of 6 (per GPU) and full fine-tuning was possible with batch size of 2 (per GPU) with gradient accumulation steps set to 3 to match the effective batch size between the two approaches.
 
 Out of the $2.9B$ parameters of the full model (U-Net + VAE + Text Encoder + Adapters), $585M$ are trainable in the adapter only method and $2.3B$ are trainable in the full fine-tuning method.
 
 The adapter only method, trained for 10 epochs took 9 hours on 4 x NVIDIA A100 40GB GPUs. The full fine-tuning method, trained for 10 epochs took 35 hours on the same hardware. This is a significant difference in training time, but the adapter only method is still able to achieve a comparable performance to the full fine-tuning method.
 
-The quantitative results on auxiliary metrics are shown in Figure \ref{fig:exp_adap_vs_full_metrics_grid}. The full fine-tuning method is able to achieve a slightly better performance on the Perceptual Loss metric, but the adapter only method achieves a comparable performance based on the SSIM, CLIP Score, and FID metrics.
+The quantitative results on auxiliary metrics are shown in Figure \ref{fig:exp_adap_vs_full_metrics_grid}. The full fine-tuning method achieves slightly better performance on the Perceptual Loss metric, but the adapter only method achieves comparable performance based on the SSIM, CLIP Score, and FID metrics, making it the preferred approach for resource-constrained scenarios.
 
 \subsection{E3: Camera Encoder Architecture Details}\label{ssec:exp_camera_encoder_depth}
 \textbf{Objective}:
-To investigate the impact of the $CameraEncoder$'s architectural design on novel view synthesis performance. Specifically, this experiment explores two main factors: (1) the depth of the Multi-Layer Perceptrons (MLPs) used to process relative rotation and translation camera parameters, and (2) the dimensionality of the internal hidden representations and the final camera embedding used for FiLM modulation.
+To investigate the impact of the camera encoder's architectural design on novel view synthesis performance. Specifically, this experiment explores two main factors: (1) the depth of the Multi-Layer Perceptrons (MLPs) used to process relative rotation and translation camera parameters, and (2) the dimensionality of the internal hidden representations and the final camera embedding used for FiLM modulation.
 
 \textbf{Methodology}:
-The $CameraEncoder$ module computes a relative transformation (rotation matrix $R$ and translation vector $T$) between source and target camera poses. The translation vector undergoes positional encoding. Both $R$ (flattened) and the positionally encoded $T$ are then processed by separate MLP streams before their outputs are concatenated and passed through a final projection MLP to produce the camera embedding.
-Four configurations of the $CameraEncoder$ were evaluated, varying MLP depth and embedding dimensionality:
+The camera encoder module computes a relative transformation (rotation matrix $R$ and translation vector $T$) between source and target camera poses. The translation vector undergoes positional encoding. Both $R$ (flattened) and the positionally encoded $T$ are then processed by separate MLP streams before their outputs are concatenated and passed through a final projection MLP to produce the camera embedding.
+Four configurations of the camera encoder were evaluated, varying MLP depth and embedding dimensionality:
 \begin{itemize}
   \item \textbf{Shallower MLPs, Lower Dimensionality}: Rotation and translation encoder MLPs each consist of two linear transformation stages. The internal hidden dimension within these MLPs is 512, and the final camera embedding dimension is 1024.
   \item \textbf{Shallower MLPs, Higher Dimensionality}: Rotation and translation encoder MLPs each consist of two linear transformation stages. The internal hidden dimension is 1024, and the final camera embedding dimension is 2048.
   \item \textbf{Deeper MLPs, Lower Dimensionality}: Rotation and translation encoder MLPs each consist of three linear transformation stages. The internal hidden dimension is 512, and the final camera embedding dimension is 1024.
   \item \textbf{Deeper MLPs, Higher Dimensionality}: Rotation and translation encoder MLPs each consist of three linear transformation stages. The internal hidden dimension is 1024, and the final camera embedding dimension is 2048.
 \end{itemize}
-All four model variants, differing only in their $CameraEncoder$ configuration as described, were trained using the adapter-only approach on a 5,000-sample subset of the ObjaverseXL dataset for 10 epochs.
+All four model variants, differing only in their camera encoder configuration as described, were trained using the adapter-only approach on a 5,000-sample subset of the ObjaverseXL dataset for 10 epochs.
 
 \begin{figure}[htbp]
   \centering
@@ -233,11 +280,29 @@ All four model variants, differing only in their $CameraEncoder$ configuration a
 \end{figure}
 
 \textbf{Results and Discussion}:
-The quantitative results demonstrate consistent performance across all four $/text{CameraEncoder}$ architectural variants, as shown in Figure \ref{fig:exp_cam_depth_metrics_grid}. All configurations converge to similar final values: CLIP scores of $\approx 0.78-0.79$, SSIM values of $\approx 0.92-0.93$, FID scores of $\approx 103-106$, and perceptual loss of $\approx 3.6-3.7$. This consistency suggests that architectural complexity has minimal impact on camera parameter encoding effectiveness.
+The quantitative results demonstrate consistent performance across all four camera encoder architectural variants, as summarized in Table \ref{tab:camera_encoder_results} and shown in Figure \ref{fig:exp_cam_depth_metrics_grid}.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Performance comparison of different camera encoder architectural configurations.}
+  \label{tab:camera_encoder_results}
+  \begin{tabular}{lcccc}
+    \toprule
+    \textbf{Configuration} & \textbf{CLIP} $\uparrow$ & \textbf{SSIM} $\uparrow$ & \textbf{FID} $\downarrow$ & \textbf{Perceptual Loss} $\downarrow$ \\
+    \midrule
+    2L-512 & 0.78 & 0.92 & 106 & 3.7 \\
+    2L-1024 & 0.79 & 0.93 & 105 & 3.6 \\
+    3L-512 & 0.79 & 0.93 & 103 & 3.6 \\
+    3L-1024 & 0.78 & 0.92 & 104 & 3.7 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+All configurations converge to similar final values with minimal performance differences, suggesting that architectural complexity has limited impact on camera parameter encoding effectiveness.
 
 Detailed analysis reveals:
 \begin{itemize}
-  \item \textbf{MLP Depth}: Deeper 3-layer configurations (3L-512, 3L-1024) show no substantial advantages over 2-layer counterparts (2L-512, 2L-1024). Performance differences remain within typical training variance, indicating that additional depth does not enhance camera transformation encoding.
+  \item \textbf{MLP Depth}: Deeper 3-layer configurations show no substantial advantages over 2-layer counterparts. Performance differences remain within typical training variance, indicating that additional depth does not enhance camera transformation encoding.
   \item \textbf{Embedding Dimensionality}: Increasing hidden dimensions from 512 to 1024 and final embeddings from 1024 to 2048 produces negligible performance improvements. Lower-dimensional representations appear sufficient for capturing necessary geometric relationships.
   \item \textbf{Training Dynamics}: All variants exhibit similar convergence patterns and stable validation metrics, demonstrating that FiLM-based conditioning is robust to moderate architectural variations.
   \item \textbf{Marginal Differences}: 3L-512 achieves slightly better FID performance.
@@ -246,7 +311,7 @@ Detailed analysis reveals:
 These findings indicate that the camera encoding bottleneck lies in the fundamental challenge of mapping geometric transformations to effective feature modulations, rather than architectural complexity. The baseline 2L-512 configuration provides optimal efficiency while maintaining competitive performance, validating its use in subsequent experiments.
 
 \subsection{E4: Impact of Training Data Scale}\label{ssec:exp_data_scale}
-\textbf{Objective}: To investigate how the size of the training dataset (number of unique 3D objects from ObjaverseXL) influences the model\'s performance, particularly its generalization ability to unseen objects (GSO dataset) and overall robustness. This is especially relevant for addressing the "Adaptation to unseen objects" limitation of current state-of-the-art methods.
+\textbf{Objective}: To investigate how the size of the training dataset (number of unique 3D objects from ObjaverseXL) influences the model's performance, particularly its generalization ability to unseen objects (GSO dataset) and overall robustness. This is especially relevant for addressing the "Adaptation to unseen objects" limitation of current state-of-the-art methods.
 
 \textbf{Methodology}:
 The proposed model, using the adapter-only training approach and consistent conditioning strengths where possible, was evaluated on increasingly larger subsets of the processed ObjaverseXL dataset:
@@ -294,15 +359,30 @@ All models were trained for a comparable number of effective updates relative to
   \label{fig:exp_data_scale_metrics_grid}
 \end{figure}
 
-\textbf{Results and Discussion}: The results demonstrate a clear positive correlation between training data scale and model performance across all evaluation metrics, as shown in Figure \ref{fig:exp_data_scale_metrics_grid}.
+\textbf{Results and Discussion}: The results demonstrate a clear positive correlation between training data scale and model performance across all evaluation metrics, as summarized in Table \ref{tab:data_scale_results} and shown in Figure \ref{fig:exp_data_scale_metrics_grid}.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Performance comparison across different training data scales.}
+  \label{tab:data_scale_results}
+  \begin{tabular}{lcccc}
+    \toprule
+    \textbf{Dataset Size} & \textbf{CLIP} $\uparrow$ & \textbf{SSIM} $\uparrow$ & \textbf{FID} $\downarrow$ & \textbf{Perceptual Loss} $\downarrow$ \\
+    \midrule
+    1,000 samples & 0.77 & 0.91 & 70 & 4.5 \\
+    5,000 samples & 0.78 & 0.92 & 60 & 4.2 \\
+    20,000 samples & \textbf{0.79} & \textbf{0.93} & \textbf{45} & \textbf{3.7} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
 \textbf{Performance Scaling with Data Size}:
 \begin{itemize}
-  \item \textbf{1,000 Samples}: The smallest dataset configuration achieved the lowest performance across all metrics. CLIP scores plateaued around $0.77$, SSIM values reached approximately $0.91$, FID scores remained elevated at around $70$, and perceptual loss fluctuated around $4.5$. This indicates that insufficient training data limits the model's ability to learn robust visual-geometric relationships necessary for high-quality novel view synthesis.
+  \item \textbf{1,000 Samples}: The smallest dataset configuration achieved the lowest performance across all metrics. This indicates that insufficient training data limits the model's ability to learn robust visual-geometric relationships necessary for high-quality novel view synthesis.
 
-  \item \textbf{5,000 Samples}: Scaling up to 5,000 samples showed notable improvements across all metrics. CLIP scores improved to approximately $0.78-0.79$, SSIM values increased to around $0.92$, FID scores decreased to approximately $60$, and perceptual loss reduced to around $4.2$. This demonstrates that increased data diversity enhances the model's understanding of 3D object appearance and geometry.
+  \item \textbf{5,000 Samples}: Scaling up to 5,000 samples showed notable improvements across all metrics. This demonstrates that increased data diversity enhances the model's understanding of 3D object appearance and geometry.
 
-  \item \textbf{20,000 Samples}: The largest dataset configuration achieved the best performance across all metrics. CLIP scores reached the highest values of approximately $0.79$, SSIM peaked at around $0.93$, FID achieved the lowest scores of approximately $45$, and perceptual loss reached the minimum values of around $3.7$. This configuration also demonstrated the most stable training dynamics, as evidenced by the smoother convergence curves.
+  \item \textbf{20,000 Samples}: The largest dataset configuration achieved the best performance across all metrics. This configuration also demonstrated the most stable training dynamics, as evidenced by the smoother convergence curves.
 \end{itemize}
 
 \textbf{Training Dynamics and Convergence}:
@@ -335,7 +415,7 @@ To comprehensively evaluate the proposed novel view synthesis method, three mode
   \item \textbf{Configuration 3}: Trained on 20,000 ObjaverseXL samples for 10 epochs.
 \end{itemize}
 
-All models were trained using the adapter-based approach with optimal hyperparameters ($img\_ref\_scale=1.0$ and $cam\_mod\_strength=1.0$) identified in previous experiments.
+All models were trained using the adapter-based approach with optimal hyperparameters (reference image influence strength = 1.0 and camera conditioning strength = 1.0) identified in previous experiments.
 
 The evaluation protocol followed a standardized procedure where each model received a source view and the corresponding camera transformation parameters to synthesize a target novel view. The generated images were then quantitatively compared against ground truth target views using the established evaluation metrics. All assessments were conducted on a held-out test set comprising 100 carefully selected samples from the GSO dataset, ensuring no overlap with training data and providing a robust benchmark for cross-dataset generalization capabilities.
 
@@ -481,9 +561,9 @@ This chapter detailed the comprehensive experimental evaluation of the proposed 
 
 Key findings from the experiments include:
 \begin{itemize}
-  \item \textbf{Optimal Conditioning Strengths}: The investigation into $img\_ref\_scale$ and $cam\_mod\_strength$ (Section \ref{ssec:exp_conditioning_strengths}) identified optimal ranges for these hyperparameters, demonstrating a balance is needed to effectively incorporate conditioning signals without introducing artifacts. The combination of $img\_ref\_scale=1.0$ and $cam\_mod\_strength=1.0$ was found to be effective.
+  \item \textbf{Optimal Conditioning Strengths}: The investigation into reference image influence strength and camera conditioning strength (Section \ref{ssec:exp_conditioning_strengths}) identified optimal ranges for these hyperparameters, demonstrating a balance is needed to effectively incorporate conditioning signals without introducing artifacts. The combination of reference image influence strength = 1.0 and camera conditioning strength = 1.0 was found to be effective.
   \item \textbf{Efficiency of Adapter-Based Training}: The comparison between adapter-only training and full U-Net fine-tuning (Section \ref{ssec:exp_adapters_vs_full_finetuning}) highlighted the significant advantages of the adapter approach in terms of parameter efficiency and training resource reduction, while achieving competitive performance.
-  \item \textbf{Camera Encoder Design}: Experiments with the $CameraEncoder$ architecture (Section \ref{ssec:exp_camera_encoder_depth}) suggested that the baseline moderately complex encoder offered a good balance of performance and efficiency.
+  \item \textbf{Camera Encoder Design}: Experiments with the camera encoder architecture (Section \ref{ssec:exp_camera_encoder_depth}) suggested that the baseline moderately complex encoder offered a good balance of performance and efficiency.
   \item \textbf{Impact of Data Scale}: Increasing the training data size (Section \ref{ssec:exp_data_scale}) generally led to improved performance and generalization on the GSO dataset, underscoring the importance of large-scale diverse data for training robust NVS models.
 \end{itemize}
 
